@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>I Write Terrible Stories</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background-color: #0f0f0f;
+      color: #e0e0e0;
+    }
+    header {
+      text-align: center;
+      padding: 2rem;
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    button {
+      background: none;
+      border: 1px solid #e0e0e0;
+      color: #e0e0e0;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #333;
+    }
+    .tab {
+      display: none;
+      padding: 2rem;
+      text-align: center;
+      font-size: 1.2rem;
+      line-height: 1.6;
+    }
+    .active {
+      display: block;
+    }
+    .deer {
+      font-size: 3rem;
+      margin-top: 1rem;
+      animation: blink 2s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>I Write Terrible Stories</header>
+
+  <nav>
+    <button onclick="showTab('hotel')">Hotel</button>
+    <button onclick="showTab('hospital')">Hospital</button>
+    <button onclick="showTab('lake')">Lake</button>
+    <button onclick="showTab('kitchen')">Kitchen Light</button>
+    <button onclick="showTab('deer')">Deer</button>
+  </nav>
+
+  <section id="hotel" class="tab active">
+    <p>“I’m sorry I told you my name.”<br>There’s no record of us here. Just static and a receipt with no ink.</p>
+    <div class="deer">🦌</div>
+  </section>
+
+  <section id="hospital" class="tab">
+    <p>You’re inside. I’m outside. The waiting room smells like denial.<br>“Is that my voice in your head when the bike slips?”</p>
+    <div class="deer">🦌</div>
+  </section>
+
+  <section id="lake" class="tab">
+    <p>The water doesn’t remember us. But I do.<br>“Do you see my face?”</p>
+    <div class="deer">🦌</div>
+  </section>
+
+  <section id="kitchen" class="tab">
+    <p>The light flickers. You hum. I forget the lyrics.<br>“Love in the roots. Love to go to.”</p>
+    <div class="deer">🦌</div>
+  </section>
+
+  <section id="deer" class="tab">
+    <p>Maybe it is me. But you won’t like it.<br>So I let it go.</p>
+    <div class="deer">🦌</div>
+  </section>
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+
+</body>
+</html>
