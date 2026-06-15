@@ -407,16 +407,14 @@ const poems = {
 // ── PIXEL SCENES ──
 const canvas = document.getElementById('scene-canvas');
 const ctx = canvas.getContext('2d');
+const PIXEL = 8;
 
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 }
 resize();
-drawScene('default');
-window.addEventListener('resize', () => { resize(); drawScene(currentScene || 'default'); });
-
-const PIXEL = 8;
+window.addEventListener('resize', () => { resize(); if (currentScene) drawScene(currentScene); });
 
 function px(x, y, w, h, color) {
   ctx.fillStyle = color;
