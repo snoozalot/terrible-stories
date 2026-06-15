@@ -1,102 +1,878 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>I Write Terrible Stories</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Courier New', monospace;
-      background-color: #0f0f0f;
-      color: #e0e0e0;
-    }
-    header {
-      text-align: center;
-      padding: 2rem;
-      font-size: 2rem;
-      letter-spacing: 2px;
-    }
-    nav {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    button {
-      background: none;
-      border: 1px solid #e0e0e0;
-      color: #e0e0e0;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #333;
-    }
-    .tab {
-      display: none;
-      padding: 2rem;
-      text-align: center;
-      font-size: 1.2rem;
-      line-height: 1.6;
-    }
-    .active {
-      display: block;
-    }
-    .deer {
-      font-size: 3rem;
-      margin-top: 1rem;
-      animation: blink 2s infinite;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Write Terrible Stories</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IM+Fell+DW+Pica:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal: #5a9e8f;
+    --deep-teal: #2d5c52;
+    --sand: #c4a97d;
+    --dark: #1a1a2e;
+    --cream: #f0e8d8;
+    --muted-green: #4a7c59;
+    --pixel: 'Press Start 2P', monospace;
+    --serif: 'IM Fell DW Pica', serif;
+  }
+
+  body {
+    background: #0d0d1a;
+    color: var(--cream);
+    font-family: var(--serif);
+    min-height: 100vh;
+    overflow-x: hidden;
+    image-rendering: pixelated;
+  }
+
+  /* ── PIXEL SCENE CANVAS ── */
+  #scene-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    image-rendering: pixelated;
+    transition: opacity 0.3s;
+  }
+
+  /* ── DITHER OVERLAY ── */
+  #dither {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.15) 0px,
+      rgba(0,0,0,0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,0,0,0.08) 0px,
+      rgba(0,0,0,0.08) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    transition: opacity 0.4s;
+  }
+  #dither.flash { opacity: 1; }
+
+  /* ── MAIN LAYOUT ── */
+  #app {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem 1rem 6rem;
+  }
+
+  /* ── TITLE ── */
+  #title-block {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    margin-top: 1.5rem;
+  }
+  #title-block h1 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    color: var(--cream);
+    text-shadow: 2px 2px 0 #000, 0 0 20px rgba(90,158,143,0.4);
+    letter-spacing: 0.02em;
+    margin-bottom: 0.4rem;
+  }
+  #title-block p {
+    font-family: var(--pixel);
+    font-size: 0.45rem;
+    color: rgba(240,232,216,0.45);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── NAV BUTTONS ── */
+  #nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+    max-width: 700px;
+  }
+
+  .loc-btn {
+    font-family: var(--pixel);
+    font-size: 0.5rem;
+    padding: 0.6rem 1rem;
+    border: 2px solid rgba(240,232,216,0.3);
+    background: rgba(13,13,26,0.7);
+    color: rgba(240,232,216,0.7);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.15s;
+    position: relative;
+    image-rendering: pixelated;
+  }
+  .loc-btn::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border: 2px solid transparent;
+    transition: border-color 0.15s;
+  }
+  .loc-btn:hover, .loc-btn.active {
+    background: rgba(90,158,143,0.25);
+    border-color: var(--teal);
+    color: var(--cream);
+    box-shadow: 0 0 12px rgba(90,158,143,0.35), inset 0 0 8px rgba(90,158,143,0.1);
+  }
+  .loc-btn.active {
+    color: #fff;
+  }
+
+  /* ── POEM PANEL ── */
+  #poem-panel {
+    max-width: 620px;
+    width: 100%;
+    background: rgba(10,10,20,0.75);
+    border: 1px solid rgba(90,158,143,0.25);
+    padding: 2rem 2.2rem;
+    backdrop-filter: blur(2px);
+    position: relative;
+  }
+  #poem-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  }
+
+  #location-label {
+    font-family: var(--pixel);
+    font-size: 0.45rem;
+    color: var(--teal);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1.4rem;
+    opacity: 0;
+    transition: opacity 0.5s 0.2s;
+  }
+  #location-label.visible { opacity: 1; }
+
+  #poem-lines {
+    font-family: var(--serif);
+    font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+    line-height: 1.85;
+    color: var(--cream);
+    min-height: 200px;
+  }
+
+  .poem-line {
+    display: block;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  .poem-line.show {
+    opacity: 1;
+    transform: none;
+  }
+  .poem-line.italic { font-style: italic; }
+  .poem-line.indent { margin-left: 1.5rem; }
+  .poem-line.blank { height: 0.7em; }
+
+  /* ── DEER SPRITE ── */
+  #deer {
+    position: fixed;
+    bottom: 18px;
+    left: -80px;
+    z-index: 3;
+    pointer-events: none;
+    transition: bottom 0.5s;
+  }
+  #deer canvas {
+    image-rendering: pixelated;
+    width: 64px;
+    height: 64px;
+  }
+
+  /* ── INTRO STATE ── */
+  #intro {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(0.95rem, 2vw, 1.1rem);
+    color: rgba(240,232,216,0.55);
+    text-align: center;
+    line-height: 1.8;
+    max-width: 420px;
+    padding: 3rem 1rem;
+  }
+  #intro span {
+    font-family: var(--pixel);
+    font-size: 0.4rem;
+    display: block;
+    margin-top: 1.5rem;
+    color: rgba(90,158,143,0.6);
+    letter-spacing: 0.12em;
+  }
+
+  /* scanline */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+  }
+</style>
 </head>
 <body>
 
-  <header>I Write Terrible Stories</header>
+<canvas id="scene-canvas"></canvas>
+<div id="dither"></div>
 
-  <nav>
-    <button onclick="showTab('hotel')">Hotel</button>
-    <button onclick="showTab('hospital')">Hospital</button>
-    <button onclick="showTab('lake')">Lake</button>
-    <button onclick="showTab('kitchen')">Kitchen Light</button>
-    <button onclick="showTab('deer')">Deer</button>
+<div id="app">
+  <div id="title-block">
+    <h1>i write terrible stories</h1>
+    <p>a poem &nbsp;·&nbsp; 🦌</p>
+  </div>
+
+  <nav id="nav">
+    <button class="loc-btn" data-loc="kitchen">Kitchen Light</button>
+    <button class="loc-btn" data-loc="lake">The Lake</button>
+    <button class="loc-btn" data-loc="hotel">Hotel</button>
+    <button class="loc-btn" data-loc="hospital">Hospital</button>
+    <button class="loc-btn" data-loc="highway">Highway</button>
   </nav>
 
-  <section id="hotel" class="tab active">
-    <p>“I’m sorry I told you my name.”<br>There’s no record of us here. Just static and a receipt with no ink.</p>
-    <div class="deer">🦌</div>
-  </section>
+  <div id="poem-panel">
+    <div id="location-label"></div>
+    <div id="poem-lines">
+      <div id="intro">
+        another morning —<br>faulty or lovely?
+        <span>choose a place to enter ↑</span>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <section id="hospital" class="tab">
-    <p>You’re inside. I’m outside. The waiting room smells like denial.<br>“Is that my voice in your head when the bike slips?”</p>
-    <div class="deer">🦌</div>
-  </section>
+<!-- Deer -->
+<div id="deer"><canvas id="deer-canvas" width="16" height="16"></canvas></div>
 
-  <section id="lake" class="tab">
-    <p>The water doesn’t remember us. But I do.<br>“Do you see my face?”</p>
-    <div class="deer">🦌</div>
-  </section>
+<script>
+// ── POEM CONTENT ──
+const poems = {
+  kitchen: {
+    label: '// kitchen light',
+    lines: [
+      { t: 'Another morning' },
+      { t: 'you'd call this faulty' },
+      { t: '', blank: true },
+      { t: 'Another morning, but your mother is cooking' },
+      { t: 'in the kitchen with the light on' },
+      { t: '', blank: true },
+      { t: 'Faulty or lovely ?', italic: true },
+      { t: 'Lovely or faulty ?', italic: true },
+      { t: '', blank: true },
+      { t: 'Hold on,' },
+      { t: 'I can\'t remember' },
+      { t: '', blank: true },
+      { t: 'Another morning, and the rain' },
+      { t: 'is everywhere' },
+      { t: 'and the kitchen light is' },
+      { t: 'still going' },
+      { t: 'and you don\'t care about that' },
+      { t: 'You never did' },
+    ]
+  },
+  lake: {
+    label: '// the lake',
+    lines: [
+      { t: 'A lake ?' },
+      { t: 'No, a river.' },
+      { t: '', blank: true },
+      { t: 'Water rustling below, trees rustling above,' },
+      { t: 'someone with roots, somewhere to go' },
+      { t: '', blank: true },
+      { t: 'No, a lake' },
+      { t: 'A lake and its clean, shimmering water' },
+      { t: 'And a birdsong that you can\'t get out of your head' },
+      { t: '', blank: true },
+      { t: 'A lake, a lake, not a river, a lake.' },
+      { t: '', blank: true },
+      { t: 'Sometimes I can\'t tell if you are real', italic: true },
+      { t: 'I walk through my past and create dreams', italic: true },
+      { t: 'And write them down', italic: true },
+      { t: '', blank: true },
+      { t: 'Is that a deer by the lake?' },
+      { t: 'The deer trots around the lake' },
+      { t: 'Its divine, silvery,' },
+      { t: 'A memory' },
+      { t: 'A telling' },
+    ]
+  },
+  hotel: {
+    label: '// the hotel',
+    lines: [
+      { t: 'Why do you love them so much, you ask' },
+      { t: 'Hotels ?' },
+      { t: '', blank: true },
+      { t: 'I can\'t remember telling you this about me' },
+      { t: '', blank: true },
+      { t: 'No past, I say.', italic: true },
+      { t: 'No past, only present,', italic: true },
+      { t: 'a clean, infinite present', italic: true },
+      { t: '', blank: true },
+      { t: 'Weird noise of the AC,' },
+      { t: 'strangers talking in the hall' },
+      { t: 'Nothing waiting for you in the closet' },
+      { t: '', blank: true },
+      { t: 'I am sorry I told you my name' },
+      { t: 'and came to your house' },
+      { t: 'I am sorry you know me so well' },
+      { t: '', blank: true },
+      { t: 'I can\'t remember telling you this about me' },
+    ]
+  },
+  hospital: {
+    label: '// the hospital',
+    lines: [
+      { t: 'A hospital then, but I am not there' },
+      { t: '', blank: true },
+      { t: 'To pace its sterile corridors' },
+      { t: 'And stare at my hands' },
+      { t: 'To stand under its unnatural light' },
+      { t: 'And wait' },
+      { t: 'And look at my feet' },
+      { t: 'And wait' },
+      { t: '', blank: true },
+      { t: 'Sorry, my love, someone says', italic: true },
+      { t: 'Over and over again', italic: true },
+      { t: 'Sorry, my love,', italic: true },
+      { t: 'I am so sorry', italic: true },
+      { t: '', blank: true },
+      { t: 'I\'m sorry, my love, did you want a better ending ?' },
+      { t: '', blank: true },
+      { t: 'Shall I take you to a creek in the middle of nowhere ?' },
+      { t: 'A beach, warm and sunny ?' },
+      { t: 'A waterfall ?' },
+    ]
+  },
+  highway: {
+    label: '// highway / deer',
+    lines: [
+      { t: 'Is that you in my car ?' },
+      { t: 'Pitch black darkness' },
+      { t: 'And a splitting white light' },
+      { t: '', blank: true },
+      { t: 'Or are you outside the bakery that I love ?' },
+      { t: '', blank: true },
+      { t: 'You think I am lying' },
+      { t: 'But I walk and walk and' },
+      { t: 'Can\'t find you' },
+      { t: '', blank: true },
+      { t: 'But there is a deer by the water' },
+      { t: '', blank: true },
+      { t: 'This isn\'t real, you say. It can\'t be', italic: true },
+      { t: '', blank: true },
+      { t: 'Maybe it isn\'t' },
+      { t: 'Maybe the deer is my invention' },
+      { t: 'Maybe it is me, but you won\'t' },
+      { t: 'like it, so I let it go' },
+      { t: '', blank: true },
+      { t: 'Is the deer looking at you ?' },
+    ]
+  }
+};
 
-  <section id="kitchen" class="tab">
-    <p>The light flickers. You hum. I forget the lyrics.<br>“Love in the roots. Love to go to.”</p>
-    <div class="deer">🦌</div>
-  </section>
+// ── PIXEL SCENES ──
+const canvas = document.getElementById('scene-canvas');
+const ctx = canvas.getContext('2d');
 
-  <section id="deer" class="tab">
-    <p>Maybe it is me. But you won’t like it.<br>So I let it go.</p>
-    <div class="deer">🦌</div>
-  </section>
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); if (currentScene) drawScene(currentScene); });
 
-  <script>
-    function showTab(id) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+const PIXEL = 8;
+
+function px(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x * PIXEL, y * PIXEL, w * PIXEL, h * PIXEL);
+}
+
+function drawScene(name) {
+  const W = Math.ceil(canvas.width / PIXEL);
+  const H = Math.ceil(canvas.height / PIXEL);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (name === 'kitchen') drawKitchen(W, H);
+  else if (name === 'lake') drawLake(W, H);
+  else if (name === 'hotel') drawHotel(W, H);
+  else if (name === 'hospital') drawHospital(W, H);
+  else if (name === 'highway') drawHighway(W, H);
+  else drawDefault(W, H);
+}
+
+function drawDefault(W, H) {
+  // deep night sky
+  for (let y = 0; y < H; y++) {
+    const t = y / H;
+    const r = Math.floor(13 + t * 10);
+    const g = Math.floor(13 + t * 5);
+    const b = Math.floor(26 + t * 20);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+}
+
+function drawKitchen(W, H) {
+  // Night outside window
+  for (let y = 0; y < H; y++) {
+    ctx.fillStyle = y < H * 0.55 ? '#0d0d1a' : '#1a1208';
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+  // Floor
+  for (let x = 0; x < W; x++) {
+    for (let y = Math.floor(H * 0.7); y < H; y++) {
+      ctx.fillStyle = (x + y) % 2 === 0 ? '#2a1f0e' : '#1e1508';
+      ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
     }
-  </script>
+  }
+  // Counter
+  const cy = Math.floor(H * 0.6);
+  ctx.fillStyle = '#3d2b10';
+  ctx.fillRect(0, cy * PIXEL, canvas.width, 3 * PIXEL);
+  ctx.fillStyle = '#5c4020';
+  ctx.fillRect(0, cy * PIXEL, canvas.width, PIXEL);
 
+  // Cabinet above counter
+  ctx.fillStyle = '#2a1f0e';
+  ctx.fillRect(0, Math.floor(H * 0.35) * PIXEL, canvas.width, Math.floor(H * 0.08) * PIXEL);
+  ctx.fillStyle = '#3d2b10';
+  for (let x = 2; x < W; x += 8) {
+    ctx.fillRect(x * PIXEL, Math.floor(H * 0.35) * PIXEL, 6 * PIXEL, Math.floor(H * 0.08) * PIXEL);
+    ctx.fillStyle = '#5c4020';
+    ctx.fillRect((x + 2) * PIXEL, (Math.floor(H * 0.35) + 2) * PIXEL, 2 * PIXEL, PIXEL);
+    ctx.fillStyle = '#3d2b10';
+  }
+
+  // WINDOW with flickering light
+  const wx = Math.floor(W * 0.5) - 5;
+  const wy = Math.floor(H * 0.12);
+  const ww = 10, wh = 12;
+  // glow behind window
+  const grd = ctx.createRadialGradient(
+    (wx + ww / 2) * PIXEL, (wy + wh / 2) * PIXEL, PIXEL,
+    (wx + ww / 2) * PIXEL, (wy + wh / 2) * PIXEL, 10 * PIXEL
+  );
+  grd.addColorStop(0, 'rgba(255,230,120,0.35)');
+  grd.addColorStop(1, 'rgba(255,200,80,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect((wx - 4) * PIXEL, (wy - 4) * PIXEL, (ww + 8) * PIXEL, (wh + 8) * PIXEL);
+  // window frame
+  ctx.fillStyle = '#5c4020';
+  ctx.fillRect(wx * PIXEL, wy * PIXEL, ww * PIXEL, wh * PIXEL);
+  // panes
+  const lightFlicker = 0.85 + Math.random() * 0.15;
+  ctx.fillStyle = `rgba(255,230,${80 + Math.floor(Math.random()*40)},${lightFlicker})`;
+  ctx.fillRect((wx + 1) * PIXEL, (wy + 1) * PIXEL, (ww / 2 - 1.5) * PIXEL, (wh - 2) * PIXEL);
+  ctx.fillRect((wx + ww / 2 + 0.5) * PIXEL, (wy + 1) * PIXEL, (ww / 2 - 1.5) * PIXEL, (wh - 2) * PIXEL);
+  // cross bar
+  ctx.fillStyle = '#5c4020';
+  ctx.fillRect(wx * PIXEL, (wy + wh / 2) * PIXEL, ww * PIXEL, PIXEL);
+  ctx.fillRect((wx + ww / 2 - 0.5) * PIXEL, wy * PIXEL, PIXEL, wh * PIXEL);
+}
+
+function drawLake(W, H) {
+  // Sky gradient — dusk
+  for (let y = 0; y < Math.floor(H * 0.45); y++) {
+    const t = y / (H * 0.45);
+    const r = Math.floor(20 + t * 60);
+    const g = Math.floor(25 + t * 70);
+    const b = Math.floor(45 + t * 80);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+  // Rock edges
+  ctx.fillStyle = '#3d3020';
+  for (let x = 0; x < W; x++) {
+    const rockH = Math.floor(3 + Math.sin(x * 0.7) * 2 + Math.cos(x * 0.3) * 1.5);
+    ctx.fillRect(x * PIXEL, Math.floor(H * 0.35) * PIXEL, PIXEL, rockH * PIXEL);
+  }
+  ctx.fillStyle = '#2a2015';
+  for (let x = 0; x < W; x++) {
+    const rockH = Math.floor(2 + Math.sin(x * 0.5 + 1) * 1.5);
+    ctx.fillRect(x * PIXEL, (Math.floor(H * 0.35) + rockH) * PIXEL, PIXEL, 2 * PIXEL);
+  }
+  // LAKE - shimmer
+  const lakeTop = Math.floor(H * 0.42);
+  for (let y = lakeTop; y < Math.floor(H * 0.78); y++) {
+    const t = (y - lakeTop) / (H * 0.36);
+    const r = Math.floor(45 + t * 20);
+    const g = Math.floor(100 + t * 40);
+    const b = Math.floor(100 + t * 30);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+  // shimmer highlights
+  for (let i = 0; i < 18; i++) {
+    const sx = Math.floor(Math.random() * W);
+    const sy = lakeTop + Math.floor(Math.random() * (H * 0.3));
+    ctx.fillStyle = 'rgba(180,255,220,0.5)';
+    ctx.fillRect(sx * PIXEL, sy * PIXEL, (1 + Math.floor(Math.random() * 3)) * PIXEL, PIXEL);
+  }
+  // Shore ground
+  for (let y = Math.floor(H * 0.78); y < H; y++) {
+    const t = (y - H * 0.78) / (H * 0.22);
+    ctx.fillStyle = `rgb(${Math.floor(50 + t*30)},${Math.floor(70+t*20)},${Math.floor(40+t*10)})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+  // Plants
+  for (let i = 0; i < 12; i++) {
+    const px2 = Math.floor(Math.random() * W);
+    const py2 = Math.floor(H * 0.3 + Math.random() * H * 0.15);
+    ctx.fillStyle = '#3a6b3a';
+    ctx.fillRect(px2 * PIXEL, py2 * PIXEL, PIXEL, (2 + Math.floor(Math.random() * 3)) * PIXEL);
+    ctx.fillStyle = '#4a8b4a';
+    ctx.fillRect((px2 - 1) * PIXEL, py2 * PIXEL, PIXEL, PIXEL);
+    ctx.fillRect((px2 + 1) * PIXEL, (py2 + 1) * PIXEL, PIXEL, PIXEL);
+  }
+}
+
+function drawHotel(W, H) {
+  // Room interior — warm dim
+  // Walls
+  for (let y = 0; y < Math.floor(H * 0.75); y++) {
+    const t = y / (H * 0.75);
+    ctx.fillStyle = `rgb(${Math.floor(28+t*12)},${Math.floor(18+t*8)},${Math.floor(22+t*10)})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+  // Floor
+  for (let x = 0; x < W; x++) {
+    for (let y = Math.floor(H * 0.75); y < H; y++) {
+      ctx.fillStyle = (x % 4 < 2) ? '#2c1a0e' : '#251508';
+      ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
+    }
+  }
+  // Bed headboard
+  const bx = Math.floor(W * 0.2), by = Math.floor(H * 0.45), bw = Math.floor(W * 0.6), bh = 6;
+  ctx.fillStyle = '#3d1f0a';
+  ctx.fillRect(bx * PIXEL, by * PIXEL, bw * PIXEL, bh * PIXEL);
+  ctx.fillStyle = '#5c3015';
+  ctx.fillRect(bx * PIXEL, by * PIXEL, bw * PIXEL, PIXEL);
+  // Bed
+  ctx.fillStyle = '#e8ddd0';
+  ctx.fillRect(bx * PIXEL, (by + bh) * PIXEL, bw * PIXEL, 4 * PIXEL);
+  ctx.fillStyle = '#d0c4b8';
+  ctx.fillRect(bx * PIXEL, (by + bh + 3) * PIXEL, bw * PIXEL, PIXEL);
+  // Pillow
+  ctx.fillStyle = '#f5f0ea';
+  ctx.fillRect((bx + 2) * PIXEL, (by + bh) * PIXEL, (bw / 2 - 3) * PIXEL, 3 * PIXEL);
+  ctx.fillRect((bx + bw / 2 + 1) * PIXEL, (by + bh) * PIXEL, (bw / 2 - 3) * PIXEL, 3 * PIXEL);
+
+  // Lamp — warm glow
+  const lx = Math.floor(W * 0.15), ly = Math.floor(H * 0.3);
+  const lampGrd = ctx.createRadialGradient(lx * PIXEL, ly * PIXEL, PIXEL, lx * PIXEL, ly * PIXEL, 8 * PIXEL);
+  lampGrd.addColorStop(0, 'rgba(255,200,100,0.5)');
+  lampGrd.addColorStop(1, 'rgba(255,180,60,0)');
+  ctx.fillStyle = lampGrd;
+  ctx.fillRect((lx - 8) * PIXEL, (ly - 6) * PIXEL, 16 * PIXEL, 14 * PIXEL);
+  ctx.fillStyle = '#c88030';
+  ctx.fillRect((lx - 2) * PIXEL, ly * PIXEL, 4 * PIXEL, 6 * PIXEL);
+  ctx.fillStyle = '#ffd080';
+  ctx.fillRect((lx - 3) * PIXEL, (ly - 3) * PIXEL, 6 * PIXEL, 3 * PIXEL);
+
+  // Window — night outside
+  const wx2 = Math.floor(W * 0.7), wy2 = Math.floor(H * 0.15);
+  ctx.fillStyle = '#0d0d1a';
+  ctx.fillRect(wx2 * PIXEL, wy2 * PIXEL, 10 * PIXEL, 14 * PIXEL);
+  ctx.fillStyle = '#8899aa';
+  // rain streaks
+  for (let i = 0; i < 8; i++) {
+    const rx = wx2 + 1 + Math.floor(Math.random() * 8);
+    const ry = wy2 + 1 + Math.floor(Math.random() * 10);
+    ctx.fillStyle = 'rgba(100,140,180,0.4)';
+    ctx.fillRect(rx * PIXEL, ry * PIXEL, PIXEL, 2 * PIXEL);
+  }
+  ctx.fillStyle = '#3d1f0a';
+  ctx.fillRect(wx2 * PIXEL, wy2 * PIXEL, PIXEL, 14 * PIXEL);
+  ctx.fillRect((wx2 + 9) * PIXEL, wy2 * PIXEL, PIXEL, 14 * PIXEL);
+  ctx.fillRect(wx2 * PIXEL, (wy2 + 7) * PIXEL, 10 * PIXEL, PIXEL);
+  ctx.fillRect(wx2 * PIXEL, wy2 * PIXEL, 10 * PIXEL, PIXEL);
+}
+
+function drawHospital(W, H) {
+  // Stark white-blue
+  for (let y = 0; y < H; y++) {
+    const t = y / H;
+    ctx.fillStyle = `rgb(${Math.floor(18+t*8)},${Math.floor(22+t*10)},${Math.floor(30+t*15)})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+  // Floor tiles
+  for (let x = 0; x < W; x++) {
+    for (let y = Math.floor(H * 0.7); y < H; y++) {
+      ctx.fillStyle = (x + y) % 2 === 0 ? '#e8eef2' : '#d0dce4';
+      ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
+    }
+  }
+  // Corridor walls with harsh fluorescent
+  const flicker2 = Math.random() > 0.1;
+  ctx.fillStyle = flicker2 ? 'rgba(200,220,240,0.12)' : 'rgba(200,220,240,0.04)';
+  ctx.fillRect(0, 0, canvas.width, Math.floor(H * 0.7) * PIXEL);
+  // Fluorescent bars
+  for (let i = 1; i < 4; i++) {
+    const lx2 = Math.floor(W * i / 4) - 3;
+    ctx.fillStyle = flicker2 ? '#cce0f0' : '#334455';
+    ctx.fillRect(lx2 * PIXEL, Math.floor(H * 0.08) * PIXEL, 6 * PIXEL, PIXEL);
+    if (flicker2) {
+      const glr = ctx.createRadialGradient(
+        (lx2 + 3) * PIXEL, Math.floor(H * 0.08) * PIXEL, 0,
+        (lx2 + 3) * PIXEL, Math.floor(H * 0.08) * PIXEL, 6 * PIXEL
+      );
+      glr.addColorStop(0, 'rgba(180,210,240,0.3)');
+      glr.addColorStop(1, 'rgba(180,210,240,0)');
+      ctx.fillStyle = glr;
+      ctx.fillRect((lx2 - 3) * PIXEL, 0, 12 * PIXEL, Math.floor(H * 0.35) * PIXEL);
+    }
+  }
+  // Doors
+  for (let i = 0; i < 3; i++) {
+    const dx = Math.floor(W * 0.15 + i * W * 0.3);
+    const dy = Math.floor(H * 0.3);
+    ctx.fillStyle = '#c8d8e8';
+    ctx.fillRect(dx * PIXEL, dy * PIXEL, 5 * PIXEL, 9 * PIXEL);
+    ctx.fillStyle = '#a8b8c8';
+    ctx.fillRect((dx + 4) * PIXEL, (dy + 4) * PIXEL, PIXEL, PIXEL);
+  }
+  // Figure standing — just silhouette
+  const fx = Math.floor(W * 0.5);
+  const fy = Math.floor(H * 0.45);
+  ctx.fillStyle = 'rgba(80,100,120,0.7)';
+  ctx.fillRect(fx * PIXEL, fy * PIXEL, 3 * PIXEL, 8 * PIXEL);
+  ctx.fillStyle = 'rgba(80,100,120,0.65)';
+  ctx.fillRect((fx - 1) * PIXEL, (fy + 8) * PIXEL, 5 * PIXEL, 2 * PIXEL);
+  ctx.fillRect((fx + 1) * PIXEL, (fy - 2) * PIXEL, 2 * PIXEL, 2 * PIXEL);
+}
+
+function drawHighway(W, H) {
+  // Pitch black night
+  ctx.fillStyle = '#030308';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Road
+  const roadTop = Math.floor(H * 0.5);
+  ctx.fillStyle = '#111118';
+  ctx.fillRect(0, roadTop * PIXEL, canvas.width, (H - roadTop) * PIXEL);
+  ctx.fillStyle = '#1a1a22';
+  ctx.fillRect(0, roadTop * PIXEL, canvas.width, PIXEL);
+  // Road markings
+  for (let x = 0; x < W; x += 6) {
+    ctx.fillStyle = '#3a3a3a';
+    ctx.fillRect(x * PIXEL, (roadTop + Math.floor((H - roadTop) / 2)) * PIXEL, 4 * PIXEL, PIXEL);
+  }
+  // Treeline silhouette
+  for (let x = 0; x < W; x++) {
+    const treeH = Math.floor(5 + Math.abs(Math.sin(x * 0.4) * 4) + Math.abs(Math.cos(x * 0.2) * 3));
+    ctx.fillStyle = '#050510';
+    ctx.fillRect(x * PIXEL, (roadTop - treeH) * PIXEL, PIXEL, treeH * PIXEL);
+  }
+  // Stars
+  for (let i = 0; i < 60; i++) {
+    const sx = Math.floor(Math.random() * W);
+    const sy = Math.floor(Math.random() * roadTop * 0.8);
+    const br = Math.random();
+    ctx.fillStyle = `rgba(200,210,255,${0.3 + br * 0.7})`;
+    ctx.fillRect(sx * PIXEL, sy * PIXEL, PIXEL, PIXEL);
+  }
+  // HEADLIGHTS — the splitting white light
+  const hx = Math.floor(W * 0.48), hy = roadTop + 1;
+  const lGrd = ctx.createRadialGradient(hx * PIXEL, hy * PIXEL, 0, hx * PIXEL, hy * PIXEL, 18 * PIXEL);
+  lGrd.addColorStop(0, 'rgba(255,255,240,0.95)');
+  lGrd.addColorStop(0.2, 'rgba(255,255,200,0.6)');
+  lGrd.addColorStop(1, 'rgba(255,255,180,0)');
+  ctx.fillStyle = lGrd;
+  ctx.fillRect(0, (hy - 14) * PIXEL, canvas.width, 28 * PIXEL);
+  ctx.fillStyle = '#fffff0';
+  ctx.fillRect((hx - 1) * PIXEL, hy * PIXEL, 2 * PIXEL, 2 * PIXEL);
+  ctx.fillRect((hx + 3) * PIXEL, hy * PIXEL, 2 * PIXEL, 2 * PIXEL);
+}
+
+// ── DEER PIXEL ART ──
+const deerCanvas = document.getElementById('deer-canvas');
+const dCtx = deerCanvas.getContext('2d');
+
+// 16x16 deer sprite (right-facing)
+const deerSprite = [
+  '................',
+  '......XX........',
+  '.....X..X.......',
+  '.....XXXX.......',
+  '....XXXXXX......',
+  '...X.XXXX.X.....',
+  '....XXXXXXX.....',
+  '.....XXXXX......',
+  '......XXX.......',
+  '.....XXXXX......',
+  '....X.XXX.X.....',
+  '....X.....X.....',
+  '....X.....X.....',
+  '....XX....XX....',
+  '................',
+  '................',
+];
+
+// Deer facing left (for hospital)
+const deerSpriteLeft = [
+  '................',
+  '........XX......',
+  '.......X..X.....',
+  '.......XXXX.....',
+  '......XXXXXX....',
+  '.....X.XXXX.X...',
+  '......XXXXXXX...',
+  '.......XXXXX....',
+  '........XXX.....',
+  '.......XXXXX....',
+  '......X.XXX.X...',
+  '......X.....X...',
+  '......X.....X...',
+  '......XX....XX..',
+  '................',
+  '................',
+];
+
+function drawDeerSprite(sprite, color = '#c8b898') {
+  dCtx.clearRect(0, 0, 16, 16);
+  for (let y = 0; y < 16; y++) {
+    for (let x = 0; x < 16; x++) {
+      if (sprite[y][x] === 'X') {
+        dCtx.fillStyle = color;
+        dCtx.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+}
+
+drawDeerSprite(deerSprite);
+
+// ── DEER ANIMATION ──
+const deerEl = document.getElementById('deer');
+let deerX = -80;
+let deerDir = 1;
+let deerPaused = false;
+let deerPauseTimer = 0;
+let currentScene = null;
+
+function animateDeer() {
+  if (currentScene === 'hospital') {
+    // Deer faces you and stays still
+    deerEl.style.bottom = '18px';
+    const targetX = window.innerWidth / 2 - 32;
+    deerX += (targetX - deerX) * 0.05;
+    deerEl.style.left = deerX + 'px';
+    drawDeerSprite(deerSpriteLeft, '#c8b898');
+  } else if (currentScene === 'highway') {
+    // Deer frozen in headlights
+    deerX = window.innerWidth / 2 - 32;
+    deerEl.style.left = deerX + 'px';
+    deerEl.style.bottom = '42px';
+    drawDeerSprite(deerSpriteLeft, '#ffffff');
+  } else {
+    deerEl.style.bottom = '18px';
+    if (!deerPaused) {
+      deerX += deerDir * 0.6;
+      if (deerX > window.innerWidth + 20) { deerX = -80; }
+      if (deerX < -80) { deerX = window.innerWidth + 20; deerDir = 1; }
+      if (Math.random() < 0.003) {
+        deerPaused = true;
+        deerPauseTimer = 80 + Math.floor(Math.random() * 120);
+      }
+    } else {
+      deerPauseTimer--;
+      if (deerPauseTimer <= 0) deerPaused = false;
+    }
+    deerEl.style.left = deerX + 'px';
+    drawDeerSprite(deerDir === 1 ? deerSprite : deerSpriteLeft);
+  }
+  requestAnimationFrame(animateDeer);
+}
+animateDeer();
+
+// ── SCENE REDRAW LOOP (for flicker) ──
+let flickerFrame = 0;
+function sceneLoop() {
+  flickerFrame++;
+  if (currentScene && (currentScene === 'kitchen' || currentScene === 'hospital') && flickerFrame % 8 === 0) {
+    drawScene(currentScene);
+  }
+  requestAnimationFrame(sceneLoop);
+}
+sceneLoop();
+
+// ── POEM RENDERING ──
+function showPoem(locKey) {
+  const data = poems[locKey];
+  const panel = document.getElementById('poem-lines');
+  const label = document.getElementById('location-label');
+
+  // Clear
+  panel.innerHTML = '';
+  label.textContent = data.label;
+  label.classList.remove('visible');
+
+  // Transition
+  const dither = document.getElementById('dither');
+  dither.classList.add('flash');
+  setTimeout(() => dither.classList.remove('flash'), 350);
+
+  setTimeout(() => label.classList.add('visible'), 300);
+
+  data.lines.forEach((line, i) => {
+    const el = document.createElement('span');
+    el.classList.add('poem-line');
+    if (line.blank) el.classList.add('blank');
+    if (line.italic) el.classList.add('italic');
+    if (line.indent) el.classList.add('indent');
+    el.textContent = line.t || '\u00A0';
+    panel.appendChild(el);
+
+    setTimeout(() => el.classList.add('show'), 350 + i * 90);
+  });
+}
+
+// ── NAV INTERACTION ──
+document.querySelectorAll('.loc-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.loc-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const loc = btn.dataset.loc;
+    currentScene = loc;
+    drawScene(loc);
+    showPoem(loc);
+  });
+});
+</script>
 </body>
 </html>
