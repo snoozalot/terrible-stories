@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -256,7 +257,7 @@
   </div>
 
   <nav id="nav">
-    <button class="loc-btn" data-loc="kitchen">Kitchen Light</button>
+    <button class="loc-btn" data-loc="kitchen">Kitchen</button>
     <button class="loc-btn" data-loc="lake">The Lake</button>
     <button class="loc-btn" data-loc="hotel">Hotel</button>
     <button class="loc-btn" data-loc="hospital">Hospital</button>
@@ -412,7 +413,8 @@ function resize() {
   canvas.height = window.innerHeight;
 }
 resize();
-window.addEventListener('resize', () => { resize(); if (currentScene) drawScene(currentScene); });
+drawScene('default');
+window.addEventListener('resize', () => { resize(); drawScene(currentScene || 'default'); });
 
 const PIXEL = 8;
 
@@ -823,8 +825,10 @@ animateDeer();
 let flickerFrame = 0;
 function sceneLoop() {
   flickerFrame++;
-  if (currentScene && (currentScene === 'kitchen' || currentScene === 'hospital') && flickerFrame % 8 === 0) {
-    drawScene(currentScene);
+  if (flickerFrame % 8 === 0) {
+    if (currentScene === 'kitchen' || currentScene === 'hospital') {
+      drawScene(currentScene);
+    }
   }
   requestAnimationFrame(sceneLoop);
 }
