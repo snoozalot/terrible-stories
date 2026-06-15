@@ -258,10 +258,10 @@
 
   <nav id="nav">
     <button class="loc-btn" data-loc="kitchen">Kitchen</button>
-    <button class="loc-btn" data-loc="lake">The Lake</button>
     <button class="loc-btn" data-loc="hotel">Hotel</button>
-    <button class="loc-btn" data-loc="hospital">Hospital</button>
+    <button class="loc-btn" data-loc="lake">The Lake</button>
     <button class="loc-btn" data-loc="highway">Highway</button>
+    <button class="loc-btn" data-loc="hospital">Hospital</button>
   </nav>
 
   <div id="poem-panel">
@@ -407,7 +407,7 @@ const poems = {
 // ── PIXEL SCENES ──
 const canvas = document.getElementById('scene-canvas');
 const ctx = canvas.getContext('2d');
-const PIXEL = 8;
+const PIXEL = 4;
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -436,287 +436,969 @@ function drawScene(name) {
 }
 
 function drawDefault(W, H) {
-  // deep night sky
   for (let y = 0; y < H; y++) {
     const t = y / H;
-    const r = Math.floor(13 + t * 10);
-    const g = Math.floor(13 + t * 5);
-    const b = Math.floor(26 + t * 20);
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillStyle = `rgb(${Math.floor(10+t*8)},${Math.floor(10+t*6)},${Math.floor(22+t*18)})`;
     ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+  // subtle stars
+  for (let i = 0; i < 120; i++) {
+    const sx = Math.floor(Math.random() * W);
+    const sy = Math.floor(Math.random() * H * 0.7);
+    ctx.fillStyle = `rgba(200,210,255,${0.2 + Math.random()*0.5})`;
+    ctx.fillRect(sx*PIXEL, sy*PIXEL, PIXEL, PIXEL);
   }
 }
 
 function drawKitchen(W, H) {
-  // Night outside window
+  // Deep night walls — blue-black at top, warm amber near floor
   for (let y = 0; y < H; y++) {
-    ctx.fillStyle = y < H * 0.55 ? '#0d0d1a' : '#1a1208';
+    const t = y / H;
+    const r = Math.floor(8  + t * 22);
+    const g = Math.floor(7  + t * 14);
+    const b = Math.floor(18 + t * 8);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
   }
-  // Floor
+
+  // Tiled floor — warm checker
+  const floorY = Math.floor(H * 0.68);
   for (let x = 0; x < W; x++) {
-    for (let y = Math.floor(H * 0.7); y < H; y++) {
-      ctx.fillStyle = (x + y) % 2 === 0 ? '#2a1f0e' : '#1e1508';
-      ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
+    for (let y = floorY; y < H; y++) {
+      const tile = ((Math.floor(x/3) + Math.floor((y-floorY)/3)) % 2 === 0);
+      ctx.fillStyle = tile ? '#2e2010' : '#1c1208';
+      ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
     }
   }
-  // Counter
-  const cy = Math.floor(H * 0.6);
-  ctx.fillStyle = '#3d2b10';
-  ctx.fillRect(0, cy * PIXEL, canvas.width, 3 * PIXEL);
-  ctx.fillStyle = '#5c4020';
-  ctx.fillRect(0, cy * PIXEL, canvas.width, PIXEL);
+  // floor highlight
+  ctx.fillStyle = '#3a2a14';
+  ctx.fillRect(0, floorY*PIXEL, canvas.width, PIXEL);
 
-  // Cabinet above counter
-  ctx.fillStyle = '#2a1f0e';
-  ctx.fillRect(0, Math.floor(H * 0.35) * PIXEL, canvas.width, Math.floor(H * 0.08) * PIXEL);
-  ctx.fillStyle = '#3d2b10';
-  for (let x = 2; x < W; x += 8) {
-    ctx.fillRect(x * PIXEL, Math.floor(H * 0.35) * PIXEL, 6 * PIXEL, Math.floor(H * 0.08) * PIXEL);
-    ctx.fillStyle = '#5c4020';
-    ctx.fillRect((x + 2) * PIXEL, (Math.floor(H * 0.35) + 2) * PIXEL, 2 * PIXEL, PIXEL);
-    ctx.fillStyle = '#3d2b10';
+  // Counter
+  const cy = Math.floor(H * 0.58);
+  ctx.fillStyle = '#2e1e0a';
+  ctx.fillRect(0, cy*PIXEL, canvas.width, 4*PIXEL);
+  ctx.fillStyle = '#4a3018';
+  ctx.fillRect(0, cy*PIXEL, canvas.width, PIXEL);
+  // counter edge highlight
+  ctx.fillStyle = '#5c3c20';
+  ctx.fillRect(0, cy*PIXEL, canvas.width, Math.ceil(PIXEL/2));
+
+  // Upper cabinets — full width with door panels
+  const cabY = Math.floor(H * 0.33);
+  const cabH = Math.floor(H * 0.1);
+  ctx.fillStyle = '#201608';
+  ctx.fillRect(0, cabY*PIXEL, canvas.width, cabH*PIXEL);
+  ctx.fillStyle = '#2e1e0a';
+  for (let x = 1; x < W; x += 9) {
+    ctx.fillRect(x*PIXEL, (cabY+1)*PIXEL, 8*PIXEL, (cabH-2)*PIXEL);
+    // door inset
+    ctx.fillStyle = '#1a1006';
+    ctx.fillRect((x+1)*PIXEL, (cabY+2)*PIXEL, 6*PIXEL, (cabH-4)*PIXEL);
+    // knob
+    ctx.fillStyle = '#6a4828';
+    ctx.fillRect((x+3)*PIXEL, (cabY+Math.floor(cabH/2))*PIXEL, 2*PIXEL, PIXEL);
+    ctx.fillStyle = '#2e1e0a';
+  }
+  // bottom trim
+  ctx.fillStyle = '#3a2810';
+  ctx.fillRect(0, (cabY+cabH-1)*PIXEL, canvas.width, PIXEL);
+
+  // Under-cabinet shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(0, (cabY+cabH)*PIXEL, canvas.width, 3*PIXEL);
+
+  // WINDOW — centred, warm glowing light from inside
+  const wx = Math.floor(W*0.5) - 6, wy = Math.floor(H*0.08);
+  const ww = 12, wh = 14;
+  // outer glow on wall
+  const grd = ctx.createRadialGradient(
+    (wx+ww/2)*PIXEL, (wy+wh/2)*PIXEL, 2*PIXEL,
+    (wx+ww/2)*PIXEL, (wy+wh/2)*PIXEL, 18*PIXEL
+  );
+  grd.addColorStop(0, 'rgba(255,220,100,0.22)');
+  grd.addColorStop(1, 'rgba(255,180,60,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect((wx-10)*PIXEL, (wy-6)*PIXEL, (ww+20)*PIXEL, (wh+12)*PIXEL);
+
+  // Frame
+  ctx.fillStyle = '#3e2810';
+  ctx.fillRect(wx*PIXEL, wy*PIXEL, ww*PIXEL, wh*PIXEL);
+  // Panes — flickering amber light
+  const flicker = 0.82 + Math.random()*0.18;
+  const warmB = 60 + Math.floor(Math.random()*40);
+  ctx.fillStyle = `rgba(255,225,${warmB},${flicker})`;
+  ctx.fillRect((wx+1)*PIXEL, (wy+1)*PIXEL, (Math.floor(ww/2)-1)*PIXEL, (wh-2)*PIXEL);
+  ctx.fillRect((wx+Math.floor(ww/2)+1)*PIXEL, (wy+1)*PIXEL, (Math.floor(ww/2)-2)*PIXEL, (wh-2)*PIXEL);
+  // cross bar
+  ctx.fillStyle = '#3e2810';
+  ctx.fillRect(wx*PIXEL, (wy+Math.floor(wh/2))*PIXEL, ww*PIXEL, PIXEL);
+  ctx.fillRect((wx+Math.floor(ww/2))*PIXEL, wy*PIXEL, PIXEL, wh*PIXEL);
+  // sill
+  ctx.fillStyle = '#4a3018';
+  ctx.fillRect((wx-1)*PIXEL, (wy+wh)*PIXEL, (ww+2)*PIXEL, 2*PIXEL);
+
+  // Rain on window — tiny streaks
+  for (let i = 0; i < 14; i++) {
+    const rx = wx + 1 + Math.floor(Math.random()*(ww-2));
+    const ry = wy + 1 + Math.floor(Math.random()*(wh-3));
+    ctx.fillStyle = 'rgba(255,240,180,0.25)';
+    ctx.fillRect(rx*PIXEL, ry*PIXEL, PIXEL, 2*PIXEL);
   }
 
-  // WINDOW with flickering light
-  const wx = Math.floor(W * 0.5) - 5;
-  const wy = Math.floor(H * 0.12);
-  const ww = 10, wh = 12;
-  // glow behind window
-  const grd = ctx.createRadialGradient(
-    (wx + ww / 2) * PIXEL, (wy + wh / 2) * PIXEL, PIXEL,
-    (wx + ww / 2) * PIXEL, (wy + wh / 2) * PIXEL, 10 * PIXEL
-  );
-  grd.addColorStop(0, 'rgba(255,230,120,0.35)');
-  grd.addColorStop(1, 'rgba(255,200,80,0)');
-  ctx.fillStyle = grd;
-  ctx.fillRect((wx - 4) * PIXEL, (wy - 4) * PIXEL, (ww + 8) * PIXEL, (wh + 8) * PIXEL);
-  // window frame
-  ctx.fillStyle = '#5c4020';
-  ctx.fillRect(wx * PIXEL, wy * PIXEL, ww * PIXEL, wh * PIXEL);
-  // panes
-  const lightFlicker = 0.85 + Math.random() * 0.15;
-  ctx.fillStyle = `rgba(255,230,${80 + Math.floor(Math.random()*40)},${lightFlicker})`;
-  ctx.fillRect((wx + 1) * PIXEL, (wy + 1) * PIXEL, (ww / 2 - 1.5) * PIXEL, (wh - 2) * PIXEL);
-  ctx.fillRect((wx + ww / 2 + 0.5) * PIXEL, (wy + 1) * PIXEL, (ww / 2 - 1.5) * PIXEL, (wh - 2) * PIXEL);
-  // cross bar
-  ctx.fillStyle = '#5c4020';
-  ctx.fillRect(wx * PIXEL, (wy + wh / 2) * PIXEL, ww * PIXEL, PIXEL);
-  ctx.fillRect((wx + ww / 2 - 0.5) * PIXEL, wy * PIXEL, PIXEL, wh * PIXEL);
+  // Kitchen objects on counter
+  // kettle silhouette
+  const kx = Math.floor(W*0.72), ky = cy - 5;
+  ctx.fillStyle = '#1a1208';
+  ctx.fillRect(kx*PIXEL, ky*PIXEL, 5*PIXEL, 4*PIXEL);
+  ctx.fillRect((kx+1)*PIXEL, (ky-1)*PIXEL, 3*PIXEL, PIXEL); // lid
+  ctx.fillRect((kx+5)*PIXEL, (ky+1)*PIXEL, 2*PIXEL, PIXEL); // spout
+  ctx.fillStyle = '#2a1e10';
+  ctx.fillRect(kx*PIXEL, ky*PIXEL, PIXEL, 4*PIXEL); // highlight
+
+  // mug
+  const mx2 = Math.floor(W*0.62), my = cy - 4;
+  ctx.fillStyle = '#3a2818';
+  ctx.fillRect(mx2*PIXEL, my*PIXEL, 4*PIXEL, 3*PIXEL);
+  ctx.fillStyle = '#2a1e10';
+  ctx.fillRect((mx2+4)*PIXEL, (my+1)*PIXEL, PIXEL, 2*PIXEL); // handle
+
+  // steam wisps from mug
+  for (let s = 0; s < 3; s++) {
+    ctx.fillStyle = `rgba(255,230,180,${0.1 + s*0.04})`;
+    ctx.fillRect((mx2+1+s)*PIXEL, (my - 1 - s)*PIXEL, PIXEL, PIXEL);
+  }
+
+  // small plant on counter right
+  const plx = Math.floor(W*0.85), ply = cy - 5;
+  ctx.fillStyle = '#1e1408';
+  ctx.fillRect(plx*PIXEL, (ply+3)*PIXEL, 3*PIXEL, 2*PIXEL); // pot
+  ctx.fillStyle = '#2a4a18';
+  ctx.fillRect(plx*PIXEL, ply*PIXEL, PIXEL, 3*PIXEL);
+  ctx.fillRect((plx+1)*PIXEL, (ply-1)*PIXEL, PIXEL, 2*PIXEL);
+  ctx.fillRect((plx+2)*PIXEL, ply*PIXEL, PIXEL, 3*PIXEL);
+  ctx.fillStyle = '#3a6820';
+  ctx.fillRect(plx*PIXEL, ply*PIXEL, PIXEL, PIXEL);
+  ctx.fillRect((plx+2)*PIXEL, (ply+1)*PIXEL, PIXEL, PIXEL);
 }
 
 function drawLake(W, H) {
-  // Sky gradient — dusk
-  for (let y = 0; y < Math.floor(H * 0.45); y++) {
-    const t = y / (H * 0.45);
-    const r = Math.floor(20 + t * 60);
-    const g = Math.floor(25 + t * 70);
-    const b = Math.floor(45 + t * 80);
+  // === SKY — deep violet-blue dusk fading to teal ===
+  for (let y = 0; y < H; y++) {
+    const t = y / H;
+    let r, g, b;
+    if (t < 0.35) {
+      // upper sky: deep indigo
+      const s = t / 0.35;
+      r = Math.floor(12 + s * 30);
+      g = Math.floor(10 + s * 40);
+      b = Math.floor(35 + s * 55);
+    } else if (t < 0.55) {
+      // horizon: soft teal-green mist
+      const s = (t - 0.35) / 0.2;
+      r = Math.floor(42 + s * 20);
+      g = Math.floor(50 + s * 60);
+      b = Math.floor(90 + s * 30);
+    } else {
+      // water/ground
+      const s = (t - 0.55) / 0.45;
+      r = Math.floor(30 + s * 25);
+      g = Math.floor(65 + s * 30);
+      b = Math.floor(75 + s * 15);
+    }
     ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+    ctx.fillRect(0, y*PIXEL, canvas.width, PIXEL);
   }
-  // Rock edges
-  ctx.fillStyle = '#3d3020';
+
+  // === STARS in upper sky ===
+  for (let i = 0; i < 80; i++) {
+    const sx = Math.floor(Math.random()*W);
+    const sy = Math.floor(Math.random()*H*0.3);
+    const a = 0.3 + Math.random()*0.6;
+    ctx.fillStyle = `rgba(220,230,255,${a})`;
+    ctx.fillRect(sx*PIXEL, sy*PIXEL, PIXEL, PIXEL);
+  }
+
+  // === MOON — soft, high right ===
+  const moonX = Math.floor(W*0.82), moonY = Math.floor(H*0.1);
+  const moonGrd = ctx.createRadialGradient(moonX*PIXEL, moonY*PIXEL, 0, moonX*PIXEL, moonY*PIXEL, 9*PIXEL);
+  moonGrd.addColorStop(0, 'rgba(230,240,255,0.9)');
+  moonGrd.addColorStop(0.5, 'rgba(180,210,255,0.4)');
+  moonGrd.addColorStop(1, 'rgba(120,160,220,0)');
+  ctx.fillStyle = moonGrd;
+  ctx.fillRect((moonX-9)*PIXEL, (moonY-9)*PIXEL, 18*PIXEL, 18*PIXEL);
+  // solid moon disc
+  for (let dy = -3; dy <= 3; dy++) {
+    for (let dx = -3; dx <= 3; dx++) {
+      if (dx*dx + dy*dy <= 10) {
+        ctx.fillStyle = dy === -3 || dx === -3 ? '#c8d8f0' : '#dce8ff';
+        ctx.fillRect((moonX+dx)*PIXEL, (moonY+dy)*PIXEL, PIXEL, PIXEL);
+      }
+    }
+  }
+
+  // === MISTY HORIZON GLOW ===
+  const horizonY = Math.floor(H*0.42);
+  const hGrd = ctx.createRadialGradient(W/2*PIXEL, horizonY*PIXEL, 0, W/2*PIXEL, horizonY*PIXEL, W*PIXEL*0.6);
+  hGrd.addColorStop(0, 'rgba(120,200,180,0.18)');
+  hGrd.addColorStop(1, 'rgba(80,150,140,0)');
+  ctx.fillStyle = hGrd;
+  ctx.fillRect(0, (horizonY-8)*PIXEL, canvas.width, 20*PIXEL);
+
+  // === ROCKS — dark, jagged, mossy ===
+  // Left rock mass
+  for (let x = 0; x < Math.floor(W*0.28); x++) {
+    const noise = Math.sin(x*0.6)*3 + Math.cos(x*0.25)*2;
+    const rh = Math.floor(H*0.22 + noise + (W*0.28-x)*0.08);
+    const rockBase = Math.floor(H*0.52);
+    // shadow side
+    const shade = x < W*0.1 ? '#1a1810' : '#242218';
+    ctx.fillStyle = shade;
+    ctx.fillRect(x*PIXEL, rockBase*PIXEL, PIXEL, rh*PIXEL);
+    // mossy top pixels
+    if (Math.random() < 0.3) {
+      ctx.fillStyle = '#2a3a1a';
+      ctx.fillRect(x*PIXEL, rockBase*PIXEL, PIXEL, PIXEL);
+    }
+  }
+  // Right rock mass
+  for (let x = Math.floor(W*0.72); x < W; x++) {
+    const noise = Math.sin(x*0.5)*3 + Math.cos(x*0.3)*2;
+    const rh = Math.floor(H*0.2 + noise + (x-W*0.72)*0.1);
+    const rockBase = Math.floor(H*0.5);
+    ctx.fillStyle = x > W*0.88 ? '#1a1810' : '#222018';
+    ctx.fillRect(x*PIXEL, rockBase*PIXEL, PIXEL, rh*PIXEL);
+    if (Math.random() < 0.25) {
+      ctx.fillStyle = '#283618';
+      ctx.fillRect(x*PIXEL, rockBase*PIXEL, PIXEL, PIXEL);
+    }
+  }
+  // Rock texture / edge detail
   for (let x = 0; x < W; x++) {
-    const rockH = Math.floor(3 + Math.sin(x * 0.7) * 2 + Math.cos(x * 0.3) * 1.5);
-    ctx.fillRect(x * PIXEL, Math.floor(H * 0.35) * PIXEL, PIXEL, rockH * PIXEL);
+    if (x < W*0.28 || x > W*0.72) {
+      if (Math.random() < 0.15) {
+        const ry = Math.floor(H*0.48 + Math.sin(x*0.4)*2);
+        ctx.fillStyle = 'rgba(60,55,40,0.5)';
+        ctx.fillRect(x*PIXEL, ry*PIXEL, PIXEL, PIXEL);
+      }
+    }
   }
-  ctx.fillStyle = '#2a2015';
-  for (let x = 0; x < W; x++) {
-    const rockH = Math.floor(2 + Math.sin(x * 0.5 + 1) * 1.5);
-    ctx.fillRect(x * PIXEL, (Math.floor(H * 0.35) + rockH) * PIXEL, PIXEL, 2 * PIXEL);
+
+  // === LAKE WATER ===
+  const lakeTop = Math.floor(H*0.46);
+  const lakeBot = Math.floor(H*0.82);
+  // Base water — deep teal glowing from centre
+  for (let y = lakeTop; y < lakeBot; y++) {
+    for (let x = 0; x < W; x++) {
+      const t = (y-lakeTop)/(lakeBot-lakeTop);
+      // distance from centre ellipse
+      const cx2 = W*0.5, cy2 = (lakeTop+lakeBot)*0.5;
+      const ellW = W*0.38, ellH = (lakeBot-lakeTop)*0.42;
+      const ex = (x-cx2)/ellW, ey = (y-cy2)/ellH;
+      const inEll = ex*ex + ey*ey;
+      let r, g, b;
+      if (inEll < 1) {
+        // inner glowing core — yellow-green luminescence
+        const glow = Math.max(0, 1 - inEll);
+        r = Math.floor(30  + glow*80);
+        g = Math.floor(90  + glow*120);
+        b = Math.floor(80  + glow*60);
+      } else {
+        // outer lake — deep teal-blue
+        r = Math.floor(25 + t*15);
+        g = Math.floor(70 + t*20);
+        b = Math.floor(85 + t*10);
+      }
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
+    }
   }
-  // LAKE - shimmer
-  const lakeTop = Math.floor(H * 0.42);
-  for (let y = lakeTop; y < Math.floor(H * 0.78); y++) {
-    const t = (y - lakeTop) / (H * 0.36);
-    const r = Math.floor(45 + t * 20);
-    const g = Math.floor(100 + t * 40);
-    const b = Math.floor(100 + t * 30);
+
+  // === WATER SHIMMER — white sparkles like reference ===
+  for (let i = 0; i < 60; i++) {
+    const sx = Math.floor(W*0.18 + Math.random()*W*0.64);
+    const sy = Math.floor(lakeTop + Math.random()*(lakeBot-lakeTop)*0.85);
+    const brightness = Math.random();
+    if (brightness > 0.6) {
+      ctx.fillStyle = `rgba(220,255,230,${0.4 + brightness*0.5})`;
+      ctx.fillRect(sx*PIXEL, sy*PIXEL, PIXEL, PIXEL);
+      // cross sparkle
+      if (brightness > 0.85) {
+        ctx.fillStyle = 'rgba(255,255,240,0.6)';
+        ctx.fillRect((sx-1)*PIXEL, sy*PIXEL, PIXEL, PIXEL);
+        ctx.fillRect((sx+1)*PIXEL, sy*PIXEL, PIXEL, PIXEL);
+        ctx.fillRect(sx*PIXEL, (sy-1)*PIXEL, PIXEL, PIXEL);
+      }
+    }
+  }
+
+  // === MOON REFLECTION in lake ===
+  const refX = Math.floor(W*0.5), refY = Math.floor((lakeTop+lakeBot)*0.4);
+  for (let dy = -2; dy <= 2; dy++) {
+    const w2 = 3 - Math.abs(dy);
+    ctx.fillStyle = `rgba(220,240,255,${0.25 - Math.abs(dy)*0.04})`;
+    ctx.fillRect((refX-w2)*PIXEL, (refY+dy)*PIXEL, w2*2*PIXEL, PIXEL);
+  }
+
+  // === SHORELINE — pebbly, mossy ===
+  for (let y = lakeBot; y < H; y++) {
+    const t = (y-lakeBot)/(H-lakeBot);
+    const r = Math.floor(28 + t*25);
+    const g = Math.floor(38 + t*20);
+    const b = Math.floor(28 + t*12);
     ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+    ctx.fillRect(0, y*PIXEL, canvas.width, PIXEL);
   }
-  // shimmer highlights
+  // pebble texture
+  for (let i = 0; i < 40; i++) {
+    const px2 = Math.floor(Math.random()*W);
+    const py2 = lakeBot + Math.floor(Math.random()*(H-lakeBot)*0.6);
+    ctx.fillStyle = `rgba(${50+Math.floor(Math.random()*30)},${55+Math.floor(Math.random()*20)},${40+Math.floor(Math.random()*15)},0.8)`;
+    ctx.fillRect(px2*PIXEL, py2*PIXEL, (1+Math.floor(Math.random()*2))*PIXEL, PIXEL);
+  }
+
+  // === PLANTS — foreground and rocks ===
+  function drawPlant(px2, py2, h, col1, col2) {
+    // stem
+    ctx.fillStyle = col1;
+    ctx.fillRect(px2*PIXEL, py2*PIXEL, PIXEL, h*PIXEL);
+    // leaves alternating
+    for (let i = 0; i < h-1; i+=2) {
+      ctx.fillStyle = i%4===0 ? col1 : col2;
+      ctx.fillRect((px2-1)*PIXEL, (py2+i)*PIXEL, PIXEL, PIXEL);
+      ctx.fillRect((px2+1)*PIXEL, (py2+i+1)*PIXEL, PIXEL, PIXEL);
+    }
+  }
+  // left bank plants
+  const plantPositions = [
+    [2,Math.floor(H*0.44)],[5,Math.floor(H*0.41)],[8,Math.floor(H*0.46)],
+    [12,Math.floor(H*0.43)],[16,Math.floor(H*0.48)],[19,Math.floor(H*0.42)],
+    [W-4,Math.floor(H*0.45)],[W-8,Math.floor(H*0.42)],[W-12,Math.floor(H*0.47)],
+    [W-16,Math.floor(H*0.44)],[W-20,Math.floor(H*0.43)],
+  ];
+  for (const [px2, py2] of plantPositions) {
+    const h = 3 + Math.floor(Math.random()*4);
+    drawPlant(px2, py2-h, h, '#2a4a18', '#3a6820');
+  }
+  // foreground grass tufts at bottom
   for (let i = 0; i < 18; i++) {
-    const sx = Math.floor(Math.random() * W);
-    const sy = lakeTop + Math.floor(Math.random() * (H * 0.3));
-    ctx.fillStyle = 'rgba(180,255,220,0.5)';
-    ctx.fillRect(sx * PIXEL, sy * PIXEL, (1 + Math.floor(Math.random() * 3)) * PIXEL, PIXEL);
+    const gx = Math.floor(Math.random()*W);
+    const gy = lakeBot + Math.floor(Math.random()*(H-lakeBot)*0.3);
+    ctx.fillStyle = '#2a3e18';
+    ctx.fillRect(gx*PIXEL, gy*PIXEL, PIXEL, (2+Math.floor(Math.random()*3))*PIXEL);
+    ctx.fillStyle = '#3a5420';
+    ctx.fillRect((gx-1)*PIXEL, gy*PIXEL, PIXEL, PIXEL);
   }
-  // Shore ground
-  for (let y = Math.floor(H * 0.78); y < H; y++) {
-    const t = (y - H * 0.78) / (H * 0.22);
-    ctx.fillStyle = `rgb(${Math.floor(50 + t*30)},${Math.floor(70+t*20)},${Math.floor(40+t*10)})`;
-    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
-  }
-  // Plants
-  for (let i = 0; i < 12; i++) {
-    const px2 = Math.floor(Math.random() * W);
-    const py2 = Math.floor(H * 0.3 + Math.random() * H * 0.15);
-    ctx.fillStyle = '#3a6b3a';
-    ctx.fillRect(px2 * PIXEL, py2 * PIXEL, PIXEL, (2 + Math.floor(Math.random() * 3)) * PIXEL);
-    ctx.fillStyle = '#4a8b4a';
-    ctx.fillRect((px2 - 1) * PIXEL, py2 * PIXEL, PIXEL, PIXEL);
-    ctx.fillRect((px2 + 1) * PIXEL, (py2 + 1) * PIXEL, PIXEL, PIXEL);
+
+  // === MIST at waterline ===
+  for (let x = 0; x < W; x++) {
+    const mist = 0.08 + Math.sin(x*0.3)*0.04 + Math.cos(x*0.17)*0.03;
+    ctx.fillStyle = `rgba(160,210,200,${mist})`;
+    ctx.fillRect(x*PIXEL, (lakeTop-1)*PIXEL, PIXEL, 3*PIXEL);
+    ctx.fillStyle = `rgba(160,210,200,${mist*0.5})`;
+    ctx.fillRect(x*PIXEL, (lakeBot-1)*PIXEL, PIXEL, 2*PIXEL);
   }
 }
 
 function drawHotel(W, H) {
-  // Room interior — warm dim
-  // Walls
-  for (let y = 0; y < Math.floor(H * 0.75); y++) {
-    const t = y / (H * 0.75);
-    ctx.fillStyle = `rgb(${Math.floor(28+t*12)},${Math.floor(18+t*8)},${Math.floor(22+t*10)})`;
+  const floorY = Math.floor(H * 0.78);
+
+  // === WALLS — dark brown gradient ===
+  for (let y = 0; y < floorY; y++) {
+    const t = y / floorY;
+    const r = Math.floor(22 + t * 16);
+    const g = Math.floor(16 + t * 10);
+    const b = Math.floor(14 + t * 8);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
   }
-  // Floor
-  for (let x = 0; x < W; x++) {
-    for (let y = Math.floor(H * 0.75); y < H; y++) {
-      ctx.fillStyle = (x % 4 < 2) ? '#2c1a0e' : '#251508';
-      ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
+
+  // === DIAMOND WALLPAPER ===
+  const dSize = 6;
+  for (let y = 2; y < floorY-2; y++) {
+    for (let x = 0; x < W; x++) {
+      const dx = ((x % (dSize*2)) + dSize*2) % (dSize*2);
+      const dy = ((y % (dSize*2)) + dSize*2) % (dSize*2);
+      const dist = Math.abs(dx - dSize) + Math.abs(dy - dSize);
+      if (dist === dSize) {
+        ctx.fillStyle = 'rgba(90,60,40,0.2)';
+        ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
+      }
+      if (dist === dSize - 1) {
+        ctx.fillStyle = 'rgba(100,70,45,0.08)';
+        ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
+      }
     }
   }
-  // Bed headboard
-  const bx = Math.floor(W * 0.2), by = Math.floor(H * 0.45), bw = Math.floor(W * 0.6), bh = 6;
-  ctx.fillStyle = '#3d1f0a';
-  ctx.fillRect(bx * PIXEL, by * PIXEL, bw * PIXEL, bh * PIXEL);
-  ctx.fillStyle = '#5c3015';
-  ctx.fillRect(bx * PIXEL, by * PIXEL, bw * PIXEL, PIXEL);
-  // Bed
-  ctx.fillStyle = '#e8ddd0';
-  ctx.fillRect(bx * PIXEL, (by + bh) * PIXEL, bw * PIXEL, 4 * PIXEL);
-  ctx.fillStyle = '#d0c4b8';
-  ctx.fillRect(bx * PIXEL, (by + bh + 3) * PIXEL, bw * PIXEL, PIXEL);
-  // Pillow
-  ctx.fillStyle = '#f5f0ea';
-  ctx.fillRect((bx + 2) * PIXEL, (by + bh) * PIXEL, (bw / 2 - 3) * PIXEL, 3 * PIXEL);
-  ctx.fillRect((bx + bw / 2 + 1) * PIXEL, (by + bh) * PIXEL, (bw / 2 - 3) * PIXEL, 3 * PIXEL);
 
-  // Lamp — warm glow
-  const lx = Math.floor(W * 0.15), ly = Math.floor(H * 0.3);
-  const lampGrd = ctx.createRadialGradient(lx * PIXEL, ly * PIXEL, PIXEL, lx * PIXEL, ly * PIXEL, 8 * PIXEL);
-  lampGrd.addColorStop(0, 'rgba(255,200,100,0.5)');
-  lampGrd.addColorStop(1, 'rgba(255,180,60,0)');
-  ctx.fillStyle = lampGrd;
-  ctx.fillRect((lx - 8) * PIXEL, (ly - 6) * PIXEL, 16 * PIXEL, 14 * PIXEL);
-  ctx.fillStyle = '#c88030';
-  ctx.fillRect((lx - 2) * PIXEL, ly * PIXEL, 4 * PIXEL, 6 * PIXEL);
-  ctx.fillStyle = '#ffd080';
-  ctx.fillRect((lx - 3) * PIXEL, (ly - 3) * PIXEL, 6 * PIXEL, 3 * PIXEL);
-
-  // Window — night outside
-  const wx2 = Math.floor(W * 0.7), wy2 = Math.floor(H * 0.15);
-  ctx.fillStyle = '#0d0d1a';
-  ctx.fillRect(wx2 * PIXEL, wy2 * PIXEL, 10 * PIXEL, 14 * PIXEL);
-  ctx.fillStyle = '#8899aa';
-  // rain streaks
-  for (let i = 0; i < 8; i++) {
-    const rx = wx2 + 1 + Math.floor(Math.random() * 8);
-    const ry = wy2 + 1 + Math.floor(Math.random() * 10);
-    ctx.fillStyle = 'rgba(100,140,180,0.4)';
-    ctx.fillRect(rx * PIXEL, ry * PIXEL, PIXEL, 2 * PIXEL);
+  // === FLOOR — dark wood ===
+  for (let x = 0; x < W; x++) {
+    for (let y = floorY; y < H; y++) {
+      const plank = Math.floor(x/4) % 2;
+      ctx.fillStyle = plank ? '#18100a' : '#1c1208';
+      ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
+    }
   }
-  ctx.fillStyle = '#3d1f0a';
-  ctx.fillRect(wx2 * PIXEL, wy2 * PIXEL, PIXEL, 14 * PIXEL);
-  ctx.fillRect((wx2 + 9) * PIXEL, wy2 * PIXEL, PIXEL, 14 * PIXEL);
-  ctx.fillRect(wx2 * PIXEL, (wy2 + 7) * PIXEL, 10 * PIXEL, PIXEL);
-  ctx.fillRect(wx2 * PIXEL, wy2 * PIXEL, 10 * PIXEL, PIXEL);
+  ctx.fillStyle = '#301e0e';
+  ctx.fillRect(0, floorY*PIXEL, canvas.width, PIXEL);
+
+  // === CHANDELIER ===
+  const cx = Math.floor(W/2), chandY = 3;
+  const cGrd = ctx.createRadialGradient(cx*PIXEL, chandY*PIXEL, PIXEL, cx*PIXEL, chandY*PIXEL, 22*PIXEL);
+  cGrd.addColorStop(0, 'rgba(255,200,100,0.32)');
+  cGrd.addColorStop(1, 'rgba(255,160,50,0)');
+  ctx.fillStyle = cGrd;
+  ctx.fillRect((cx-22)*PIXEL, 0, 44*PIXEL, 22*PIXEL);
+  // chain
+  ctx.fillStyle = '#7a6030';
+  ctx.fillRect(cx*PIXEL, 0, PIXEL, 4*PIXEL);
+  // main arms
+  ctx.fillStyle = '#906830';
+  ctx.fillRect((cx-8)*PIXEL, chandY*PIXEL, 17*PIXEL, PIXEL);
+  ctx.fillRect((cx-6)*PIXEL, (chandY+1)*PIXEL, 13*PIXEL, PIXEL);
+  // drop arms
+  for (const off of [-7, -3, 0, 3, 7]) {
+    ctx.fillStyle = '#906830';
+    ctx.fillRect((cx+off)*PIXEL, (chandY+1)*PIXEL, PIXEL, 2*PIXEL);
+    // candle
+    ctx.fillStyle = '#d4b060';
+    ctx.fillRect((cx+off)*PIXEL, (chandY+3)*PIXEL, PIXEL, 2*PIXEL);
+    // flame
+    ctx.fillStyle = '#fff080';
+    ctx.fillRect((cx+off)*PIXEL, (chandY+2)*PIXEL, PIXEL, PIXEL);
+    ctx.fillStyle = 'rgba(255,230,100,0.35)';
+    ctx.fillRect((cx+off-1)*PIXEL, (chandY+1)*PIXEL, 3*PIXEL, 3*PIXEL);
+  }
+
+  // === WALL SCONCES ===
+  function drawSconce(sx, sy) {
+    const sg = ctx.createRadialGradient(sx*PIXEL,sy*PIXEL,0,sx*PIXEL,sy*PIXEL,10*PIXEL);
+    sg.addColorStop(0,'rgba(255,185,70,0.28)');
+    sg.addColorStop(1,'rgba(255,150,40,0)');
+    ctx.fillStyle = sg;
+    ctx.fillRect((sx-10)*PIXEL,(sy-8)*PIXEL,20*PIXEL,16*PIXEL);
+    ctx.fillStyle = '#6a4820';
+    ctx.fillRect((sx-1)*PIXEL, sy*PIXEL, 3*PIXEL, 3*PIXEL);
+    ctx.fillRect((sx-2)*PIXEL, (sy+1)*PIXEL, 5*PIXEL, PIXEL);
+    for (let i = -1; i <= 1; i++) {
+      ctx.fillStyle = '#c8a040';
+      ctx.fillRect((sx+i)*PIXEL,(sy-2)*PIXEL,PIXEL,2*PIXEL);
+      ctx.fillStyle = '#ffee70';
+      ctx.fillRect((sx+i)*PIXEL,(sy-3)*PIXEL,PIXEL,PIXEL);
+    }
+  }
+  drawSconce(Math.floor(W*0.09), Math.floor(H*0.27));
+  drawSconce(Math.floor(W*0.91), Math.floor(H*0.27));
+
+  // === FRAMED PAINTING ===
+  const fpx = Math.floor(W*0.36), fpy = Math.floor(H*0.09);
+  const fpw = Math.floor(W*0.28), fph = Math.floor(H*0.23);
+  // shadow
+  ctx.fillStyle = '#080503';
+  ctx.fillRect((fpx+2)*PIXEL,(fpy+2)*PIXEL,fpw*PIXEL,fph*PIXEL);
+  // outer frame
+  ctx.fillStyle = '#4a2e10';
+  ctx.fillRect(fpx*PIXEL,fpy*PIXEL,fpw*PIXEL,fph*PIXEL);
+  // inner frame
+  ctx.fillStyle = '#3a2208';
+  ctx.fillRect((fpx+2)*PIXEL,(fpy+2)*PIXEL,(fpw-4)*PIXEL,(fph-4)*PIXEL);
+  // painting interior — moody teal scene
+  ctx.fillStyle = '#1e2c28';
+  ctx.fillRect((fpx+3)*PIXEL,(fpy+3)*PIXEL,(fpw-6)*PIXEL,(fph-6)*PIXEL);
+  // vague draped figure / sheets
+  ctx.fillStyle = '#b0a898';
+  ctx.fillRect((fpx+4)*PIXEL,(fpy+fph-9)*PIXEL,(fpw-8)*PIXEL,2*PIXEL);
+  ctx.fillStyle = '#e8e0d0';
+  ctx.fillRect((fpx+5)*PIXEL,(fpy+fph-10)*PIXEL,(fpw-10)*PIXEL,PIXEL);
+  ctx.fillStyle = '#384840';
+  ctx.fillRect((fpx+4)*PIXEL,(fpy+4)*PIXEL,2*PIXEL,(fph-12)*PIXEL);
+  ctx.fillRect((fpx+fpw-7)*PIXEL,(fpy+5)*PIXEL,2*PIXEL,(fph-13)*PIXEL);
+  // frame gold highlight
+  ctx.fillStyle = '#6a4818';
+  ctx.fillRect(fpx*PIXEL,fpy*PIXEL,fpw*PIXEL,PIXEL);
+  ctx.fillRect(fpx*PIXEL,fpy*PIXEL,PIXEL,fph*PIXEL);
+
+  // === BED ===
+  const bx = Math.floor(W*0.24), bw = Math.floor(W*0.52);
+  const headY = Math.floor(H*0.5), headH = Math.floor(H*0.22);
+  // posts
+  ctx.fillStyle = '#161008';
+  ctx.fillRect(bx*PIXEL,(headY-3)*PIXEL,3*PIXEL,(headH+3)*PIXEL);
+  ctx.fillRect((bx+bw-3)*PIXEL,(headY-3)*PIXEL,3*PIXEL,(headH+3)*PIXEL);
+  // post tops
+  ctx.fillStyle = '#2a1a0c';
+  ctx.fillRect((bx-1)*PIXEL,(headY-4)*PIXEL,5*PIXEL,2*PIXEL);
+  ctx.fillRect((bx+bw-4)*PIXEL,(headY-4)*PIXEL,5*PIXEL,2*PIXEL);
+  // headboard fill
+  ctx.fillStyle = '#1a1008';
+  ctx.fillRect((bx+3)*PIXEL,headY*PIXEL,(bw-6)*PIXEL,headH*PIXEL);
+  // headboard arch carved detail
+  ctx.fillStyle = '#221610';
+  const archCx = Math.floor(bx+bw/2);
+  for (let i=-Math.floor(bw*0.18); i<=Math.floor(bw*0.18); i++) {
+    const ah = Math.floor(Math.sqrt(Math.max(0,Math.pow(bw*0.18,2)-i*i))*0.35);
+    if(ah>0) ctx.fillRect((archCx+i)*PIXEL,(headY+2)*PIXEL,PIXEL,ah*PIXEL);
+  }
+  // headboard panel lines
+  ctx.fillStyle = '#120c06';
+  ctx.fillRect((bx+4)*PIXEL,(headY+1)*PIXEL,PIXEL,(headH-2)*PIXEL);
+  ctx.fillRect((bx+bw-5)*PIXEL,(headY+1)*PIXEL,PIXEL,(headH-2)*PIXEL);
+
+  const mattY = headY + headH;
+  // mattress
+  ctx.fillStyle = '#c8c0b0';
+  ctx.fillRect((bx+2)*PIXEL,mattY*PIXEL,(bw-4)*PIXEL,4*PIXEL);
+  // pillows
+  ctx.fillStyle = '#e0d8c8';
+  ctx.fillRect((bx+4)*PIXEL,mattY*PIXEL,Math.floor(bw*0.18)*PIXEL,3*PIXEL);
+  ctx.fillRect((bx+bw-4-Math.floor(bw*0.18))*PIXEL,mattY*PIXEL,Math.floor(bw*0.18)*PIXEL,3*PIXEL);
+  // dark blanket
+  ctx.fillStyle = '#221810';
+  ctx.fillRect((bx+2)*PIXEL,(mattY+2)*PIXEL,(bw-4)*PIXEL,5*PIXEL);
+  ctx.fillStyle = '#18100a';
+  ctx.fillRect((bx+2)*PIXEL,(mattY+6)*PIXEL,(bw-4)*PIXEL,PIXEL);
+  // blanket wrinkle highlights
+  ctx.fillStyle = '#2e2018';
+  for (let i=3; i<bw-3; i+=6) {
+    ctx.fillRect((bx+i)*PIXEL,(mattY+3)*PIXEL,2*PIXEL,PIXEL);
+  }
+
+  // === NIGHTSTANDS ===
+  function drawNightstand(nx, ny) {
+    const nw=8, nh=6;
+    ctx.fillStyle='#161008';
+    ctx.fillRect(nx*PIXEL,ny*PIXEL,nw*PIXEL,nh*PIXEL);
+    ctx.fillStyle='#241808';
+    ctx.fillRect(nx*PIXEL,ny*PIXEL,nw*PIXEL,PIXEL);
+    ctx.fillStyle='#100a04';
+    ctx.fillRect(nx*PIXEL,(ny+3)*PIXEL,nw*PIXEL,PIXEL);
+    // knob
+    ctx.fillStyle='#503820';
+    ctx.fillRect((nx+3)*PIXEL,(ny+1)*PIXEL,2*PIXEL,PIXEL);
+    ctx.fillRect((nx+3)*PIXEL,(ny+4)*PIXEL,2*PIXEL,PIXEL);
+    // candle
+    ctx.fillStyle='#c09040';
+    ctx.fillRect((nx+3)*PIXEL,(ny-3)*PIXEL,2*PIXEL,3*PIXEL);
+    ctx.fillStyle='#ffe050';
+    ctx.fillRect((nx+3)*PIXEL,(ny-4)*PIXEL,2*PIXEL,PIXEL);
+    ctx.fillStyle='#fff8a0';
+    ctx.fillRect((nx+4)*PIXEL,(ny-5)*PIXEL,PIXEL,PIXEL);
+    const cg=ctx.createRadialGradient((nx+4)*PIXEL,(ny-3)*PIXEL,0,(nx+4)*PIXEL,(ny-3)*PIXEL,7*PIXEL);
+    cg.addColorStop(0,'rgba(255,200,80,0.3)');
+    cg.addColorStop(1,'rgba(255,150,40,0)');
+    ctx.fillStyle=cg;
+    ctx.fillRect((nx-3)*PIXEL,(ny-8)*PIXEL,14*PIXEL,10*PIXEL);
+  }
+  drawNightstand(bx-10, floorY-7);
+  drawNightstand(bx+bw+2, floorY-7);
 }
 
 function drawHospital(W, H) {
-  // Stark white-blue
+  const floorY = Math.floor(H * 0.68);
+  const vpX = Math.floor(W / 2);  // vanishing point x
+  const vpY = Math.floor(H * 0.32); // vanishing point y
+
+  // === WALLS — cold grey-blue, gradient to vanishing point ===
   for (let y = 0; y < H; y++) {
     const t = y / H;
-    ctx.fillStyle = `rgb(${Math.floor(18+t*8)},${Math.floor(22+t*10)},${Math.floor(30+t*15)})`;
+    // ceiling darker, walls lighten slightly toward middle
+    const r = Math.floor(14 + t * 18);
+    const g = Math.floor(18 + t * 20);
+    const b = Math.floor(26 + t * 22);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
   }
-  // Floor tiles
-  for (let x = 0; x < W; x++) {
-    for (let y = Math.floor(H * 0.7); y < H; y++) {
-      ctx.fillStyle = (x + y) % 2 === 0 ? '#e8eef2' : '#d0dce4';
-      ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
-    }
+
+  // === PERSPECTIVE WALL PANELS — converging to VP ===
+  // Left wall panels receding right
+  const numPanels = 5;
+  for (let i = 0; i <= numPanels; i++) {
+    const t = i / numPanels;
+    // left wall edge at floor
+    const lx = Math.floor(W * t * 0.45);
+    const ly = floorY;
+    ctx.strokeStyle = `rgba(140,165,190,${0.12 - t * 0.02})`;
+    ctx.lineWidth = PIXEL * 0.5;
+    ctx.beginPath();
+    ctx.moveTo(vpX * PIXEL, vpY * PIXEL);
+    ctx.lineTo(lx * PIXEL, ly * PIXEL);
+    ctx.stroke();
+    // ceiling
+    ctx.beginPath();
+    ctx.moveTo(vpX * PIXEL, vpY * PIXEL);
+    ctx.lineTo(lx * PIXEL, 0);
+    ctx.stroke();
   }
-  // Corridor walls with harsh fluorescent
-  const flicker2 = Math.random() > 0.1;
-  ctx.fillStyle = flicker2 ? 'rgba(200,220,240,0.12)' : 'rgba(200,220,240,0.04)';
-  ctx.fillRect(0, 0, canvas.width, Math.floor(H * 0.7) * PIXEL);
-  // Fluorescent bars
-  for (let i = 1; i < 4; i++) {
-    const lx2 = Math.floor(W * i / 4) - 3;
-    ctx.fillStyle = flicker2 ? '#cce0f0' : '#334455';
-    ctx.fillRect(lx2 * PIXEL, Math.floor(H * 0.08) * PIXEL, 6 * PIXEL, PIXEL);
-    if (flicker2) {
-      const glr = ctx.createRadialGradient(
-        (lx2 + 3) * PIXEL, Math.floor(H * 0.08) * PIXEL, 0,
-        (lx2 + 3) * PIXEL, Math.floor(H * 0.08) * PIXEL, 6 * PIXEL
+  // Right wall panels
+  for (let i = 0; i <= numPanels; i++) {
+    const t = i / numPanels;
+    const rx = Math.floor(W - W * t * 0.45);
+    ctx.beginPath();
+    ctx.moveTo(vpX * PIXEL, vpY * PIXEL);
+    ctx.lineTo(rx * PIXEL, floorY * PIXEL);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(vpX * PIXEL, vpY * PIXEL);
+    ctx.lineTo(rx * PIXEL, 0);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 1;
+
+  // === CEILING — dark, with fluorescent fixture strip ===
+  ctx.fillStyle = 'rgba(10,14,20,0.5)';
+  ctx.fillRect(0, 0, canvas.width, Math.floor(H * 0.08) * PIXEL);
+
+  // Fluorescent tube strip down the ceiling centre, receding in perspective
+  const flicker = Math.random() > 0.07;
+  // Tubes get smaller toward VP
+  const tubePositions = [0.08, 0.22, 0.38, 0.54, 0.68, 0.8, 0.9, 0.96];
+  for (let i = 0; i < tubePositions.length; i++) {
+    const t = tubePositions[i];
+    const ty = Math.floor(H * t);
+    // tube width shrinks with perspective
+    const tw = Math.max(1, Math.floor((1 - t) * 12 + 2));
+    const tx = vpX - Math.floor(tw / 2);
+    const on = flicker && (i < 6 || Math.random() > 0.3);
+    ctx.fillStyle = on ? '#d0ecf8' : '#1a2830';
+    ctx.fillRect(tx * PIXEL, ty * PIXEL, tw * PIXEL, Math.max(1, Math.floor(PIXEL * 0.5)));
+    if (on) {
+      const gr = ctx.createRadialGradient(
+        vpX * PIXEL, ty * PIXEL, 0,
+        vpX * PIXEL, ty * PIXEL, tw * PIXEL * 2
       );
-      glr.addColorStop(0, 'rgba(180,210,240,0.3)');
-      glr.addColorStop(1, 'rgba(180,210,240,0)');
-      ctx.fillStyle = glr;
-      ctx.fillRect((lx2 - 3) * PIXEL, 0, 12 * PIXEL, Math.floor(H * 0.35) * PIXEL);
+      gr.addColorStop(0, `rgba(160,210,240,${0.22 - t * 0.15})`);
+      gr.addColorStop(1, 'rgba(140,195,230,0)');
+      ctx.fillStyle = gr;
+      ctx.fillRect((vpX - tw * 3) * PIXEL, (ty - tw) * PIXEL, tw * 6 * PIXEL, tw * 2 * PIXEL);
     }
   }
-  // Doors
-  for (let i = 0; i < 3; i++) {
-    const dx = Math.floor(W * 0.15 + i * W * 0.3);
-    const dy = Math.floor(H * 0.3);
-    ctx.fillStyle = '#c8d8e8';
-    ctx.fillRect(dx * PIXEL, dy * PIXEL, 5 * PIXEL, 9 * PIXEL);
-    ctx.fillStyle = '#a8b8c8';
-    ctx.fillRect((dx + 4) * PIXEL, (dy + 4) * PIXEL, PIXEL, PIXEL);
+
+  // === FLOOR — cold pale tiles receding to VP ===
+  // Base floor colour
+  for (let y = floorY; y < H; y++) {
+    const t = (y - floorY) / (H - floorY);
+    const shade = Math.floor(185 + t * 30);
+    ctx.fillStyle = `rgb(${shade - 8},${shade},${shade + 8})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
   }
-  // Figure standing — just silhouette
-  const fx = Math.floor(W * 0.5);
-  const fy = Math.floor(H * 0.45);
-  ctx.fillStyle = 'rgba(80,100,120,0.7)';
-  ctx.fillRect(fx * PIXEL, fy * PIXEL, 3 * PIXEL, 8 * PIXEL);
-  ctx.fillStyle = 'rgba(80,100,120,0.65)';
-  ctx.fillRect((fx - 1) * PIXEL, (fy + 8) * PIXEL, 5 * PIXEL, 2 * PIXEL);
-  ctx.fillRect((fx + 1) * PIXEL, (fy - 2) * PIXEL, 2 * PIXEL, 2 * PIXEL);
+  // Perspective tile grid lines — converge to VP
+  ctx.strokeStyle = 'rgba(160,180,200,0.18)';
+  ctx.lineWidth = PIXEL * 0.5;
+  // horizontal rows
+  const tileRows = 8;
+  for (let i = 1; i < tileRows; i++) {
+    const t = i / tileRows;
+    const fy2 = floorY + Math.floor((H - floorY) * (1 - (1 - t) * (1 - t)));
+    ctx.beginPath();
+    ctx.moveTo(0, fy2 * PIXEL);
+    ctx.lineTo(canvas.width, fy2 * PIXEL);
+    ctx.stroke();
+  }
+  // column lines converging to VP
+  for (let i = -6; i <= 6; i++) {
+    const ex = vpX + i * Math.floor(W * 0.09);
+    ctx.beginPath();
+    ctx.moveTo(vpX * PIXEL, floorY * PIXEL);
+    ctx.lineTo(ex * PIXEL, H * PIXEL);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 1;
+
+  // Floor specular sheen
+  const sheen = ctx.createLinearGradient(vpX * PIXEL, floorY * PIXEL, vpX * PIXEL, H * PIXEL);
+  sheen.addColorStop(0, 'rgba(200,220,240,0.12)');
+  sheen.addColorStop(1, 'rgba(180,205,225,0)');
+  ctx.fillStyle = sheen;
+  ctx.fillRect(0, floorY * PIXEL, canvas.width, (H - floorY) * PIXEL);
+
+  // === WALL BASEBOARD ===
+  ctx.fillStyle = 'rgba(100,120,140,0.15)';
+  ctx.fillRect(0, (floorY - 3) * PIXEL, canvas.width, 3 * PIXEL);
+
+  // === WAINSCOTING PANELS on side walls ===
+  // Left side
+  for (let i = 0; i < 3; i++) {
+    const t = (i + 1) / 4;
+    const px2 = Math.floor(W * t * 0.42);
+    const pw2 = Math.floor(W * 0.08 * (1 - t * 0.5));
+    const ph2 = Math.floor(H * 0.25 * (1 - t * 0.3));
+    const py2 = Math.floor(floorY - ph2 - 2);
+    ctx.fillStyle = `rgba(120,145,165,${0.08 - t * 0.02})`;
+    ctx.fillRect(px2 * PIXEL, py2 * PIXEL, pw2 * PIXEL, ph2 * PIXEL);
+    ctx.fillStyle = `rgba(160,185,205,0.06)`;
+    ctx.fillRect(px2 * PIXEL, py2 * PIXEL, PIXEL, ph2 * PIXEL);
+    ctx.fillRect(px2 * PIXEL, py2 * PIXEL, pw2 * PIXEL, PIXEL);
+  }
+  // Right side (mirror)
+  for (let i = 0; i < 3; i++) {
+    const t = (i + 1) / 4;
+    const px2 = Math.floor(W - W * t * 0.42 - W * 0.08 * (1 - t * 0.5));
+    const pw2 = Math.floor(W * 0.08 * (1 - t * 0.5));
+    const ph2 = Math.floor(H * 0.25 * (1 - t * 0.3));
+    const py2 = Math.floor(floorY - ph2 - 2);
+    ctx.fillStyle = `rgba(120,145,165,${0.08 - t * 0.02})`;
+    ctx.fillRect(px2 * PIXEL, py2 * PIXEL, pw2 * PIXEL, ph2 * PIXEL);
+    ctx.fillStyle = `rgba(160,185,205,0.06)`;
+    ctx.fillRect((px2 + pw2 - 1) * PIXEL, py2 * PIXEL, PIXEL, ph2 * PIXEL);
+    ctx.fillRect(px2 * PIXEL, py2 * PIXEL, pw2 * PIXEL, PIXEL);
+  }
+
+  // === DOORS — receding in perspective ===
+  const doorData = [
+    { side: 'L', i: 0 }, { side: 'R', i: 0 },
+    { side: 'L', i: 1 }, { side: 'R', i: 1 },
+    { side: 'L', i: 2 },
+  ];
+  for (const { side, i } of doorData) {
+    const persp = 1 - i * 0.28;
+    const dw = Math.max(2, Math.floor(7 * persp));
+    const dh = Math.max(3, Math.floor(14 * persp));
+    const baseX = side === 'L'
+      ? Math.floor(W * (0.12 + i * 0.12))
+      : Math.floor(W * (0.88 - i * 0.12) - dw);
+    const dy = floorY - dh;
+    // door shadow
+    ctx.fillStyle = `rgba(8,12,18,${0.5 * persp})`;
+    ctx.fillRect((baseX + 1) * PIXEL, (dy + 1) * PIXEL, dw * PIXEL, dh * PIXEL);
+    // door face
+    ctx.fillStyle = `rgb(${Math.floor(155 * persp + 20)},${Math.floor(175 * persp + 20)},${Math.floor(195 * persp + 20)})`;
+    ctx.fillRect(baseX * PIXEL, dy * PIXEL, dw * PIXEL, dh * PIXEL);
+    // door frame
+    ctx.fillStyle = `rgba(80,100,120,${0.4 * persp})`;
+    ctx.fillRect(baseX * PIXEL, dy * PIXEL, PIXEL, dh * PIXEL);
+    ctx.fillRect((baseX + dw - 1) * PIXEL, dy * PIXEL, PIXEL, dh * PIXEL);
+    ctx.fillRect(baseX * PIXEL, dy * PIXEL, dw * PIXEL, PIXEL);
+    // panel detail
+    if (dw >= 5) {
+      ctx.fillStyle = `rgba(130,155,175,${0.2 * persp})`;
+      ctx.fillRect((baseX + 1) * PIXEL, (dy + 2) * PIXEL, (dw - 2) * PIXEL, Math.floor(dh * 0.4) * PIXEL);
+      ctx.fillRect((baseX + 1) * PIXEL, (dy + Math.floor(dh * 0.5)) * PIXEL, (dw - 2) * PIXEL, Math.floor(dh * 0.38) * PIXEL);
+    }
+    // handle
+    if (dw >= 4) {
+      ctx.fillStyle = `rgba(180,190,200,${0.6 * persp})`;
+      const handleX = side === 'L' ? baseX + dw - 2 : baseX + 1;
+      ctx.fillRect(handleX * PIXEL, (dy + Math.floor(dh * 0.5)) * PIXEL, PIXEL, 2 * PIXEL);
+    }
+  }
+
+  // === FIGURE — lone silhouette near VP ===
+  const fx = vpX, fy = Math.floor(vpY + 2);
+  // cast glow from exit behind figure
+  const figGlow = ctx.createRadialGradient(fx * PIXEL, fy * PIXEL, 0, fx * PIXEL, fy * PIXEL, 12 * PIXEL);
+  figGlow.addColorStop(0, 'rgba(180,215,240,0.12)');
+  figGlow.addColorStop(1, 'rgba(140,190,220,0)');
+  ctx.fillStyle = figGlow;
+  ctx.fillRect((fx - 12) * PIXEL, (fy - 4) * PIXEL, 24 * PIXEL, 20 * PIXEL);
+
+  ctx.fillStyle = 'rgba(30,42,56,0.92)';
+  ctx.fillRect((fx - 1) * PIXEL, fy * PIXEL, 3 * PIXEL, 8 * PIXEL);       // body
+  ctx.fillRect(fx * PIXEL, (fy - 2) * PIXEL, 2 * PIXEL, 2 * PIXEL);        // head
+  ctx.fillRect((fx - 2) * PIXEL, (fy + 1) * PIXEL, 2 * PIXEL, 5 * PIXEL); // left arm
+  ctx.fillRect((fx + 3) * PIXEL, (fy + 1) * PIXEL, 2 * PIXEL, 5 * PIXEL); // right arm
+  ctx.fillRect((fx - 1) * PIXEL, (fy + 8) * PIXEL, 2 * PIXEL, 3 * PIXEL); // left leg
+  ctx.fillRect((fx + 2) * PIXEL, (fy + 8) * PIXEL, 2 * PIXEL, 3 * PIXEL); // right leg
+  // floor reflection
+  ctx.fillStyle = 'rgba(30,42,56,0.12)';
+  ctx.fillRect((fx - 1) * PIXEL, (fy + 11) * PIXEL, 3 * PIXEL, 3 * PIXEL);
+
+  // === EXIT SIGN — glowing green at VP ===
+  const exX = vpX - 3, exY = Math.floor(vpY - 6);
+  // glow aura
+  const exGlow = ctx.createRadialGradient(vpX * PIXEL, exY * PIXEL, 0, vpX * PIXEL, exY * PIXEL, 10 * PIXEL);
+  exGlow.addColorStop(0, 'rgba(0,200,80,0.18)');
+  exGlow.addColorStop(1, 'rgba(0,160,60,0)');
+  ctx.fillStyle = exGlow;
+  ctx.fillRect((exX - 5) * PIXEL, (exY - 4) * PIXEL, 16 * PIXEL, 10 * PIXEL);
+  ctx.fillStyle = '#002a0c';
+  ctx.fillRect(exX * PIXEL, exY * PIXEL, 6 * PIXEL, 3 * PIXEL);
+  ctx.fillStyle = '#00e050';
+  ctx.fillRect((exX + 1) * PIXEL, exY * PIXEL, 4 * PIXEL, PIXEL);
+  ctx.fillStyle = '#00ff70';
+  ctx.fillRect((exX + 2) * PIXEL, exY * PIXEL, 2 * PIXEL, PIXEL);
+
+  // === WALL CLOCK — left wall ===
+  const clkX = Math.floor(W * 0.14), clkY = Math.floor(H * 0.22);
+  ctx.fillStyle = '#b8c8d4';
+  for (let dy2 = -4; dy2 <= 4; dy2++) for (let dx = -4; dx <= 4; dx++) {
+    if (dx * dx + dy2 * dy2 <= 18) {
+      ctx.fillStyle = dx === 0 && dy2 === 0 ? '#e0eaf0' : '#c0d0dc';
+      ctx.fillRect((clkX + dx) * PIXEL, (clkY + dy2) * PIXEL, PIXEL, PIXEL);
+    }
+  }
+  ctx.fillStyle = '#3a5060';
+  ctx.fillRect(clkX * PIXEL, (clkY - 3) * PIXEL, PIXEL, 3 * PIXEL);
+  ctx.fillRect(clkX * PIXEL, clkY * PIXEL, 3 * PIXEL, PIXEL);
+
+  // === TROLLEY / EQUIPMENT near right wall ===
+  const eqX = Math.floor(W * 0.8), eqY = floorY - 8;
+  ctx.fillStyle = '#8898a8';
+  ctx.fillRect(eqX * PIXEL, eqY * PIXEL, 5 * PIXEL, 7 * PIXEL);
+  ctx.fillStyle = '#6a7a88';
+  ctx.fillRect(eqX * PIXEL, eqY * PIXEL, 5 * PIXEL, PIXEL);
+  ctx.fillRect(eqX * PIXEL, (eqY + 3) * PIXEL, 5 * PIXEL, PIXEL);
+  // wheels
+  ctx.fillStyle = '#3a4a58';
+  ctx.fillRect(eqX * PIXEL, (floorY - 1) * PIXEL, 2 * PIXEL, PIXEL);
+  ctx.fillRect((eqX + 3) * PIXEL, (floorY - 1) * PIXEL, 2 * PIXEL, PIXEL);
+  // IV bag hang
+  ctx.fillStyle = '#7090a0';
+  ctx.fillRect((eqX + 2) * PIXEL, (eqY - 4) * PIXEL, PIXEL, 4 * PIXEL);
+  ctx.fillStyle = '#a8c8d8';
+  ctx.fillRect((eqX + 1) * PIXEL, (eqY - 6) * PIXEL, 3 * PIXEL, 2 * PIXEL);
 }
 
 function drawHighway(W, H) {
-  // Pitch black night
-  ctx.fillStyle = '#030308';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  // Road
-  const roadTop = Math.floor(H * 0.5);
-  ctx.fillStyle = '#111118';
-  ctx.fillRect(0, roadTop * PIXEL, canvas.width, (H - roadTop) * PIXEL);
-  ctx.fillStyle = '#1a1a22';
-  ctx.fillRect(0, roadTop * PIXEL, canvas.width, PIXEL);
-  // Road markings
-  for (let x = 0; x < W; x += 6) {
-    ctx.fillStyle = '#3a3a3a';
-    ctx.fillRect(x * PIXEL, (roadTop + Math.floor((H - roadTop) / 2)) * PIXEL, 4 * PIXEL, PIXEL);
+  // === SKY ===
+  for (let y = 0; y < H; y++) {
+    const t = y / H;
+    ctx.fillStyle = `rgb(${Math.floor(2+t*6)},${Math.floor(2+t*5)},${Math.floor(8+t*10)})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
   }
-  // Treeline silhouette
+
+  const roadTop = Math.floor(H * 0.5);
+  // Headlight source — car position near horizon centre
+  const carX = Math.floor(W * 0.5);
+  const carY = roadTop + 1; // just below horizon
+
+  // === STARS ===
+  for (let i = 0; i < 160; i++) {
+    const sx = Math.floor(Math.random() * W);
+    const sy = Math.floor(Math.random() * roadTop * 0.85);
+    const br = Math.random();
+    ctx.fillStyle = `rgba(${185+Math.floor(br*55)},${195+Math.floor(br*45)},255,${0.2+br*0.7})`;
+    ctx.fillRect(sx * PIXEL, sy * PIXEL, PIXEL, PIXEL);
+    if (br > 0.92) {
+      ctx.fillStyle = 'rgba(215,225,255,0.35)';
+      ctx.fillRect((sx-1)*PIXEL, sy*PIXEL, PIXEL, PIXEL);
+      ctx.fillRect((sx+1)*PIXEL, sy*PIXEL, PIXEL, PIXEL);
+    }
+  }
+
+  // === TREELINE ===
   for (let x = 0; x < W; x++) {
-    const treeH = Math.floor(5 + Math.abs(Math.sin(x * 0.4) * 4) + Math.abs(Math.cos(x * 0.2) * 3));
-    ctx.fillStyle = '#050510';
+    const treeH = Math.floor(5 + Math.abs(Math.sin(x*0.38+1)*5) + Math.abs(Math.cos(x*0.19)*4));
+    ctx.fillStyle = x % 6 < 3 ? '#020210' : '#040412';
     ctx.fillRect(x * PIXEL, (roadTop - treeH) * PIXEL, PIXEL, treeH * PIXEL);
   }
-  // Stars
-  for (let i = 0; i < 60; i++) {
-    const sx = Math.floor(Math.random() * W);
-    const sy = Math.floor(Math.random() * roadTop * 0.8);
-    const br = Math.random();
-    ctx.fillStyle = `rgba(200,210,255,${0.3 + br * 0.7})`;
-    ctx.fillRect(sx * PIXEL, sy * PIXEL, PIXEL, PIXEL);
+
+  // === ROAD BASE ===
+  ctx.fillStyle = '#0c0c14';
+  ctx.fillRect(0, roadTop * PIXEL, canvas.width, (H - roadTop) * PIXEL);
+  ctx.fillStyle = '#16161e';
+  ctx.fillRect(0, roadTop * PIXEL, canvas.width, PIXEL);
+
+  // === DIVERGING HEADLIGHT CONE ===
+  // Two beams from the focal point (car position at horizon) spreading to screen bottom corners
+  // Left beam
+  const leftGrd = ctx.createLinearGradient(
+    carX * PIXEL, carY * PIXEL,
+    Math.floor(W * 0.05) * PIXEL, H * PIXEL
+  );
+  leftGrd.addColorStop(0, 'rgba(255,255,230,0.0)');
+  leftGrd.addColorStop(0.15, 'rgba(255,255,210,0.55)');
+  leftGrd.addColorStop(0.5, 'rgba(255,250,200,0.28)');
+  leftGrd.addColorStop(1, 'rgba(240,240,180,0.08)');
+  ctx.fillStyle = leftGrd;
+  ctx.beginPath();
+  ctx.moveTo(carX * PIXEL, carY * PIXEL);
+  ctx.lineTo(Math.floor(W * 0.0) * PIXEL, H * PIXEL);
+  ctx.lineTo(Math.floor(W * 0.46) * PIXEL, H * PIXEL);
+  ctx.closePath();
+  ctx.fill();
+
+  // Right beam
+  const rightGrd = ctx.createLinearGradient(
+    carX * PIXEL, carY * PIXEL,
+    Math.floor(W * 0.95) * PIXEL, H * PIXEL
+  );
+  rightGrd.addColorStop(0, 'rgba(255,255,230,0.0)');
+  rightGrd.addColorStop(0.15, 'rgba(255,255,210,0.55)');
+  rightGrd.addColorStop(0.5, 'rgba(255,250,200,0.28)');
+  rightGrd.addColorStop(1, 'rgba(240,240,180,0.08)');
+  ctx.fillStyle = rightGrd;
+  ctx.beginPath();
+  ctx.moveTo(carX * PIXEL, carY * PIXEL);
+  ctx.lineTo(Math.floor(W * 0.54) * PIXEL, H * PIXEL);
+  ctx.lineTo(Math.floor(W * 1.0) * PIXEL, H * PIXEL);
+  ctx.closePath();
+  ctx.fill();
+
+  // Bright inner cone — tighter, whiter
+  const innerGrd = ctx.createLinearGradient(carX * PIXEL, carY * PIXEL, carX * PIXEL, H * PIXEL);
+  innerGrd.addColorStop(0, 'rgba(255,255,245,0.0)');
+  innerGrd.addColorStop(0.1, 'rgba(255,255,235,0.7)');
+  innerGrd.addColorStop(0.5, 'rgba(255,255,220,0.35)');
+  innerGrd.addColorStop(1, 'rgba(250,250,205,0.1)');
+  ctx.fillStyle = innerGrd;
+  ctx.beginPath();
+  ctx.moveTo(carX * PIXEL, carY * PIXEL);
+  ctx.lineTo(Math.floor(W * 0.28) * PIXEL, H * PIXEL);
+  ctx.lineTo(Math.floor(W * 0.72) * PIXEL, H * PIXEL);
+  ctx.closePath();
+  ctx.fill();
+
+  // Road surface lit by the beams — tinted yellow-white near centre
+  for (let y = roadTop + 1; y < H; y++) {
+    const t = (y - roadTop) / (H - roadTop);
+    // how wide is the lit cone at this y?
+    const halfW = Math.floor((t * W * 0.46));
+    const litL = Math.max(0, carX - halfW);
+    const litR = Math.min(W, carX + halfW);
+    // lit strip
+    ctx.fillStyle = `rgba(255,255,210,${0.1 * (1 - t * 0.7)})`;
+    ctx.fillRect(litL * PIXEL, y * PIXEL, (litR - litL) * PIXEL, PIXEL);
   }
-  // HEADLIGHTS — the splitting white light
-  const hx = Math.floor(W * 0.48), hy = roadTop + 1;
-  const lGrd = ctx.createRadialGradient(hx * PIXEL, hy * PIXEL, 0, hx * PIXEL, hy * PIXEL, 18 * PIXEL);
-  lGrd.addColorStop(0, 'rgba(255,255,240,0.95)');
-  lGrd.addColorStop(0.2, 'rgba(255,255,200,0.6)');
-  lGrd.addColorStop(1, 'rgba(255,255,180,0)');
-  ctx.fillStyle = lGrd;
-  ctx.fillRect(0, (hy - 14) * PIXEL, canvas.width, 28 * PIXEL);
-  ctx.fillStyle = '#fffff0';
-  ctx.fillRect((hx - 1) * PIXEL, hy * PIXEL, 2 * PIXEL, 2 * PIXEL);
-  ctx.fillRect((hx + 3) * PIXEL, hy * PIXEL, 2 * PIXEL, 2 * PIXEL);
+
+  // Road texture
+  for (let x = 0; x < W; x++) {
+    for (let y = roadTop + 1; y < H; y += 4) {
+      if (Math.random() < 0.05) {
+        ctx.fillStyle = 'rgba(28,28,44,0.5)';
+        ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
+      }
+    }
+  }
+
+  // Road centre dashes — perspective-converging
+  for (let y = roadTop + 2; y < H; y += 6) {
+    const t = (y - roadTop) / (H - roadTop);
+    const dashW = Math.max(1, Math.floor(t * 4));
+    ctx.fillStyle = `rgba(55,55,75,${0.6 + t * 0.3})`;
+    ctx.fillRect((carX - Math.floor(dashW/2)) * PIXEL, y * PIXEL, dashW * PIXEL, Math.max(1, Math.floor(t * 2)) * PIXEL);
+  }
+
+  // Road edges — converging perspective lines
+  ctx.strokeStyle = 'rgba(45,45,65,0.7)';
+  ctx.lineWidth = PIXEL;
+  // left edge
+  ctx.beginPath();
+  ctx.moveTo(carX * PIXEL, roadTop * PIXEL);
+  ctx.lineTo(Math.floor(W * 0.06) * PIXEL, H * PIXEL);
+  ctx.stroke();
+  // right edge
+  ctx.beginPath();
+  ctx.moveTo(carX * PIXEL, roadTop * PIXEL);
+  ctx.lineTo(Math.floor(W * 0.94) * PIXEL, H * PIXEL);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+
+  // === CAR HEADLIGHTS — the focal point source ===
+  // Left headlight
+  ctx.fillStyle = '#fffef0';
+  ctx.fillRect((carX - 3) * PIXEL, carY * PIXEL, 2 * PIXEL, 2 * PIXEL);
+  // Right headlight
+  ctx.fillRect((carX + 2) * PIXEL, carY * PIXEL, 2 * PIXEL, 2 * PIXEL);
+  // Lens bloom
+  ctx.fillStyle = 'rgba(255,255,220,0.8)';
+  ctx.fillRect((carX - 4) * PIXEL, (carY - 1) * PIXEL, 4 * PIXEL, 4 * PIXEL);
+  ctx.fillRect((carX + 1) * PIXEL, (carY - 1) * PIXEL, 4 * PIXEL, 4 * PIXEL);
+  // car silhouette
+  ctx.fillStyle = '#050508';
+  ctx.fillRect((carX - 4) * PIXEL, (carY + 2) * PIXEL, 9 * PIXEL, 3 * PIXEL);
+  ctx.fillRect((carX - 3) * PIXEL, (carY - 1) * PIXEL, 7 * PIXEL, 3 * PIXEL);
 }
+
 
 // ── DEER PIXEL ART ──
 const deerCanvas = document.getElementById('deer-canvas');
