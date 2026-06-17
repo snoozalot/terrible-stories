@@ -450,135 +450,302 @@ function drawDefault(W, H) {
 }
 
 function drawKitchen(W, H) {
-  // Deep night walls — blue-black at top, warm amber near floor
+  // === WALLS — original dark blue-black top → warm amber bottom ===
   for (let y = 0; y < H; y++) {
     const t = y / H;
-    const r = Math.floor(8  + t * 22);
-    const g = Math.floor(7  + t * 14);
+    const r = Math.floor(8  + t * 28);
+    const g = Math.floor(7  + t * 16);
     const b = Math.floor(18 + t * 8);
     ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
   }
 
-  // Tiled floor — warm checker
-  const floorY = Math.floor(H * 0.68);
+  const floorY = Math.floor(H * 0.70);
+  const cy     = Math.floor(H * 0.58); // counter top
+
+  // === FLOOR — dark warm wood planks (no checker) ===
   for (let x = 0; x < W; x++) {
     for (let y = floorY; y < H; y++) {
-      const tile = ((Math.floor(x/3) + Math.floor((y-floorY)/3)) % 2 === 0);
-      ctx.fillStyle = tile ? '#2e2010' : '#1c1208';
-      ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
+      const plank = Math.floor(x / 6) % 3;
+      const shade = plank === 0 ? '#2a1a08' : plank === 1 ? '#221408' : '#2e1e0c';
+      ctx.fillStyle = shade;
+      ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
     }
   }
-  // floor highlight
-  ctx.fillStyle = '#3a2a14';
-  ctx.fillRect(0, floorY*PIXEL, canvas.width, PIXEL);
-
-  // Counter
-  const cy = Math.floor(H * 0.58);
-  ctx.fillStyle = '#2e1e0a';
-  ctx.fillRect(0, cy*PIXEL, canvas.width, 4*PIXEL);
-  ctx.fillStyle = '#4a3018';
-  ctx.fillRect(0, cy*PIXEL, canvas.width, PIXEL);
-  // counter edge highlight
-  ctx.fillStyle = '#5c3c20';
-  ctx.fillRect(0, cy*PIXEL, canvas.width, Math.ceil(PIXEL/2));
-
-  // Upper cabinets — full width with door panels
-  const cabY = Math.floor(H * 0.33);
-  const cabH = Math.floor(H * 0.1);
-  ctx.fillStyle = '#201608';
-  ctx.fillRect(0, cabY*PIXEL, canvas.width, cabH*PIXEL);
-  ctx.fillStyle = '#2e1e0a';
-  for (let x = 1; x < W; x += 9) {
-    ctx.fillRect(x*PIXEL, (cabY+1)*PIXEL, 8*PIXEL, (cabH-2)*PIXEL);
-    // door inset
-    ctx.fillStyle = '#1a1006';
-    ctx.fillRect((x+1)*PIXEL, (cabY+2)*PIXEL, 6*PIXEL, (cabH-4)*PIXEL);
-    // knob
-    ctx.fillStyle = '#6a4828';
-    ctx.fillRect((x+3)*PIXEL, (cabY+Math.floor(cabH/2))*PIXEL, 2*PIXEL, PIXEL);
-    ctx.fillStyle = '#2e1e0a';
+  // plank dividers
+  ctx.fillStyle = 'rgba(10,6,2,0.5)';
+  for (let x = 6; x < W; x += 6) {
+    ctx.fillRect(x * PIXEL, floorY * PIXEL, PIXEL, (H - floorY) * PIXEL);
   }
-  // bottom trim
+  ctx.fillStyle = '#3a2a14';
+  ctx.fillRect(0, floorY * PIXEL, canvas.width, PIXEL);
+
+  // === LOWER CABINETS (counter body) ===
+  ctx.fillStyle = '#1e1208';
+  ctx.fillRect(0, (cy + 3) * PIXEL, canvas.width, (floorY - cy - 3) * PIXEL);
+  // lower cabinet door panels
+  for (let x = 2; x < W; x += 12) {
+    ctx.fillStyle = '#2a1a0a';
+    ctx.fillRect(x * PIXEL, (cy + 4) * PIXEL, 10 * PIXEL, (floorY - cy - 6) * PIXEL);
+    ctx.fillStyle = '#160e04';
+    ctx.fillRect((x + 1) * PIXEL, (cy + 5) * PIXEL, 8 * PIXEL, (floorY - cy - 8) * PIXEL);
+    // knob
+    ctx.fillStyle = '#7a5228';
+    ctx.fillRect((x + 4) * PIXEL, (cy + Math.floor((floorY - cy) * 0.45)) * PIXEL, 2 * PIXEL, 2 * PIXEL);
+    ctx.fillStyle = '#a07038';
+    ctx.fillRect((x + 4) * PIXEL, (cy + Math.floor((floorY - cy) * 0.45)) * PIXEL, PIXEL, PIXEL);
+  }
+
+  // === COUNTER TOP — dark stone ===
+  ctx.fillStyle = '#3a2a14';
+  ctx.fillRect(0, cy * PIXEL, canvas.width, 3 * PIXEL);
+  ctx.fillStyle = '#4e3a1e'; // top highlight edge
+  ctx.fillRect(0, cy * PIXEL, canvas.width, PIXEL);
+  ctx.fillStyle = '#221408'; // bottom shadow edge
+  ctx.fillRect(0, (cy + 3) * PIXEL, canvas.width, PIXEL);
+
+  // === UPPER CABINETS ===
+  const cabY = Math.floor(H * 0.30);
+  const cabH = Math.floor(H * 0.14);
+  ctx.fillStyle = '#1a1006';
+  ctx.fillRect(0, cabY * PIXEL, canvas.width, cabH * PIXEL);
+  for (let x = 2; x < W; x += 12) {
+    ctx.fillStyle = '#261808';
+    ctx.fillRect(x * PIXEL, (cabY + 1) * PIXEL, 10 * PIXEL, (cabH - 2) * PIXEL);
+    ctx.fillStyle = '#160e04';
+    ctx.fillRect((x + 1) * PIXEL, (cabY + 2) * PIXEL, 8 * PIXEL, (cabH - 4) * PIXEL);
+    // inner highlight
+    ctx.fillStyle = '#2e1e0a';
+    ctx.fillRect((x + 1) * PIXEL, (cabY + 2) * PIXEL, 8 * PIXEL, PIXEL);
+    // knob
+    ctx.fillStyle = '#7a5228';
+    ctx.fillRect((x + 4) * PIXEL, (cabY + Math.floor(cabH / 2)) * PIXEL, 2 * PIXEL, 2 * PIXEL);
+    ctx.fillStyle = '#a07038';
+    ctx.fillRect((x + 4) * PIXEL, (cabY + Math.floor(cabH / 2)) * PIXEL, PIXEL, PIXEL);
+  }
+  // cabinet edges
   ctx.fillStyle = '#3a2810';
-  ctx.fillRect(0, (cabY+cabH-1)*PIXEL, canvas.width, PIXEL);
+  ctx.fillRect(0, cabY * PIXEL, canvas.width, PIXEL);
+  ctx.fillRect(0, (cabY + cabH - 1) * PIXEL, canvas.width, 2 * PIXEL);
+  // under-cabinet shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.fillRect(0, (cabY + cabH + 1) * PIXEL, canvas.width, 3 * PIXEL);
 
-  // Under-cabinet shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.fillRect(0, (cabY+cabH)*PIXEL, canvas.width, 3*PIXEL);
+  // === WINDOW — centred, night sky outside, warm glow inside ===
+  const wx = Math.floor(W * 0.38), wy = Math.floor(H * 0.04);
+  const ww = Math.floor(W * 0.24), wh = cabY - wy - 1;
 
-  // WINDOW — centred, warm glowing light from inside
-  const wx = Math.floor(W*0.5) - 6, wy = Math.floor(H*0.08);
-  const ww = 12, wh = 14;
-  // outer glow on wall
-  const grd = ctx.createRadialGradient(
-    (wx+ww/2)*PIXEL, (wy+wh/2)*PIXEL, 2*PIXEL,
-    (wx+ww/2)*PIXEL, (wy+wh/2)*PIXEL, 18*PIXEL
+  // wall glow around window
+  const wGlow = ctx.createRadialGradient(
+    (wx + ww / 2) * PIXEL, (wy + wh / 2) * PIXEL, PIXEL,
+    (wx + ww / 2) * PIXEL, (wy + wh / 2) * PIXEL, ww * PIXEL
   );
-  grd.addColorStop(0, 'rgba(255,220,100,0.22)');
-  grd.addColorStop(1, 'rgba(255,180,60,0)');
-  ctx.fillStyle = grd;
-  ctx.fillRect((wx-10)*PIXEL, (wy-6)*PIXEL, (ww+20)*PIXEL, (wh+12)*PIXEL);
+  wGlow.addColorStop(0, 'rgba(255,210,90,0.2)');
+  wGlow.addColorStop(1, 'rgba(255,170,50,0)');
+  ctx.fillStyle = wGlow;
+  ctx.fillRect((wx - 8) * PIXEL, 0, (ww + 16) * PIXEL, (wh + 10) * PIXEL);
 
-  // Frame
+  // frame
   ctx.fillStyle = '#3e2810';
-  ctx.fillRect(wx*PIXEL, wy*PIXEL, ww*PIXEL, wh*PIXEL);
-  // Panes — flickering amber light
-  const flicker = 0.82 + Math.random()*0.18;
-  const warmB = 60 + Math.floor(Math.random()*40);
-  ctx.fillStyle = `rgba(255,225,${warmB},${flicker})`;
-  ctx.fillRect((wx+1)*PIXEL, (wy+1)*PIXEL, (Math.floor(ww/2)-1)*PIXEL, (wh-2)*PIXEL);
-  ctx.fillRect((wx+Math.floor(ww/2)+1)*PIXEL, (wy+1)*PIXEL, (Math.floor(ww/2)-2)*PIXEL, (wh-2)*PIXEL);
-  // cross bar
+  ctx.fillRect(wx * PIXEL, wy * PIXEL, ww * PIXEL, wh * PIXEL);
+  // pane — deep night blue outside
+  const halfW = Math.floor(ww / 2);
+  ctx.fillStyle = '#0a0e1e';
+  ctx.fillRect((wx + 1) * PIXEL, (wy + 1) * PIXEL, (halfW - 1) * PIXEL, (wh - 2) * PIXEL);
+  ctx.fillRect((wx + halfW + 1) * PIXEL, (wy + 1) * PIXEL, (ww - halfW - 2) * PIXEL, (wh - 2) * PIXEL);
+  // stars in window
+  for (let i = 0; i < 18; i++) {
+    const sx = wx + 1 + Math.floor(Math.random() * (ww - 2));
+    const sy = wy + 1 + Math.floor(Math.random() * (wh - 2));
+    ctx.fillStyle = `rgba(200,210,255,${0.3 + Math.random() * 0.5})`;
+    ctx.fillRect(sx * PIXEL, sy * PIXEL, PIXEL, PIXEL);
+  }
+  // rain streaks on glass
+  for (let i = 0; i < 10; i++) {
+    const rx = wx + 1 + Math.floor(Math.random() * (ww - 2));
+    const ry = wy + 1 + Math.floor(Math.random() * (wh - 3));
+    ctx.fillStyle = 'rgba(120,140,200,0.2)';
+    ctx.fillRect(rx * PIXEL, ry * PIXEL, PIXEL, 2 * PIXEL);
+  }
+  // cross bars
   ctx.fillStyle = '#3e2810';
-  ctx.fillRect(wx*PIXEL, (wy+Math.floor(wh/2))*PIXEL, ww*PIXEL, PIXEL);
-  ctx.fillRect((wx+Math.floor(ww/2))*PIXEL, wy*PIXEL, PIXEL, wh*PIXEL);
+  ctx.fillRect(wx * PIXEL, (wy + Math.floor(wh / 2)) * PIXEL, ww * PIXEL, 2 * PIXEL);
+  ctx.fillRect((wx + halfW) * PIXEL, wy * PIXEL, 2 * PIXEL, wh * PIXEL);
   // sill
   ctx.fillStyle = '#4a3018';
-  ctx.fillRect((wx-1)*PIXEL, (wy+wh)*PIXEL, (ww+2)*PIXEL, 2*PIXEL);
+  ctx.fillRect((wx - 1) * PIXEL, (wy + wh) * PIXEL, (ww + 2) * PIXEL, 2 * PIXEL);
 
-  // Rain on window — tiny streaks
-  for (let i = 0; i < 14; i++) {
-    const rx = wx + 1 + Math.floor(Math.random()*(ww-2));
-    const ry = wy + 1 + Math.floor(Math.random()*(wh-3));
-    ctx.fillStyle = 'rgba(255,240,180,0.25)';
-    ctx.fillRect(rx*PIXEL, ry*PIXEL, PIXEL, 2*PIXEL);
-  }
+  // === CAT on window sill — silhouette against night sky ===
+  const catX = wx + Math.floor(ww / 2) - 3;
+  const catY = wy + wh - 7;
+  ctx.fillStyle = '#0e0a06';
+  // body
+  ctx.fillRect(catX * PIXEL,       (catY + 3) * PIXEL, 5 * PIXEL, 4 * PIXEL);
+  // head
+  ctx.fillRect((catX + 1) * PIXEL,  catY       * PIXEL, 3 * PIXEL, 4 * PIXEL);
+  // ears
+  ctx.fillRect(catX * PIXEL,        (catY - 2)  * PIXEL, 2 * PIXEL, 2 * PIXEL);
+  ctx.fillRect((catX + 3) * PIXEL,  (catY - 2)  * PIXEL, 2 * PIXEL, 2 * PIXEL);
+  // tail curling around
+  ctx.fillRect((catX + 5) * PIXEL,  (catY + 4)  * PIXEL, 3 * PIXEL, PIXEL);
+  ctx.fillRect((catX + 7) * PIXEL,  (catY + 2)  * PIXEL, PIXEL,     3 * PIXEL);
+  // eyes glow amber
+  ctx.fillStyle = '#d4900a';
+  ctx.fillRect((catX + 1) * PIXEL,  (catY + 1)  * PIXEL, PIXEL, PIXEL);
+  ctx.fillRect((catX + 3) * PIXEL,  (catY + 1)  * PIXEL, PIXEL, PIXEL);
 
-  // Kitchen objects on counter
-  // kettle silhouette
-  const kx = Math.floor(W*0.72), ky = cy - 5;
-  ctx.fillStyle = '#1a1208';
-  ctx.fillRect(kx*PIXEL, ky*PIXEL, 5*PIXEL, 4*PIXEL);
-  ctx.fillRect((kx+1)*PIXEL, (ky-1)*PIXEL, 3*PIXEL, PIXEL); // lid
-  ctx.fillRect((kx+5)*PIXEL, (ky+1)*PIXEL, 2*PIXEL, PIXEL); // spout
-  ctx.fillStyle = '#2a1e10';
-  ctx.fillRect(kx*PIXEL, ky*PIXEL, PIXEL, 4*PIXEL); // highlight
+  // === OPEN FRIDGE — far left, yellow light spilling out ===
+  const frx = Math.floor(W * 0.02), fry = Math.floor(H * 0.30);
+  const frw = Math.floor(W * 0.13), frh = floorY - fry;
 
-  // mug
-  const mx2 = Math.floor(W*0.62), my = cy - 4;
-  ctx.fillStyle = '#3a2818';
-  ctx.fillRect(mx2*PIXEL, my*PIXEL, 4*PIXEL, 3*PIXEL);
-  ctx.fillStyle = '#2a1e10';
-  ctx.fillRect((mx2+4)*PIXEL, (my+1)*PIXEL, PIXEL, 2*PIXEL); // handle
+  // fridge glow onto wall and floor
+  const fGlow = ctx.createRadialGradient(
+    (frx + frw + 1) * PIXEL, (fry + Math.floor(frh * 0.4)) * PIXEL, 0,
+    (frx + frw + 1) * PIXEL, (fry + Math.floor(frh * 0.4)) * PIXEL, frw * 2.5 * PIXEL
+  );
+  fGlow.addColorStop(0,   'rgba(255,220,80,0.38)');
+  fGlow.addColorStop(0.4, 'rgba(255,200,60,0.16)');
+  fGlow.addColorStop(1,   'rgba(255,180,40,0)');
+  ctx.fillStyle = fGlow;
+  ctx.fillRect(0, (fry - 4) * PIXEL, (frx + frw * 3) * PIXEL, (frh + 8) * PIXEL);
 
-  // steam wisps from mug
-  for (let s = 0; s < 3; s++) {
-    ctx.fillStyle = `rgba(255,230,180,${0.1 + s*0.04})`;
-    ctx.fillRect((mx2+1+s)*PIXEL, (my - 1 - s)*PIXEL, PIXEL, PIXEL);
-  }
+  // fridge body
+  ctx.fillStyle = '#2a2218';
+  ctx.fillRect(frx * PIXEL, fry * PIXEL, frw * PIXEL, frh * PIXEL);
+  // fridge top edge
+  ctx.fillStyle = '#3a3028';
+  ctx.fillRect(frx * PIXEL, fry * PIXEL, frw * PIXEL, PIXEL);
 
-  // small plant on counter right
-  const plx = Math.floor(W*0.85), ply = cy - 5;
-  ctx.fillStyle = '#1e1408';
-  ctx.fillRect(plx*PIXEL, (ply+3)*PIXEL, 3*PIXEL, 2*PIXEL); // pot
-  ctx.fillStyle = '#2a4a18';
-  ctx.fillRect(plx*PIXEL, ply*PIXEL, PIXEL, 3*PIXEL);
-  ctx.fillRect((plx+1)*PIXEL, (ply-1)*PIXEL, PIXEL, 2*PIXEL);
-  ctx.fillRect((plx+2)*PIXEL, ply*PIXEL, PIXEL, 3*PIXEL);
-  ctx.fillStyle = '#3a6820';
-  ctx.fillRect(plx*PIXEL, ply*PIXEL, PIXEL, PIXEL);
-  ctx.fillRect((plx+2)*PIXEL, (ply+1)*PIXEL, PIXEL, PIXEL);
+  // interior — warm yellow light
+  const intH = Math.floor(frh * 0.62);
+  const intGrd = ctx.createLinearGradient(0, fry * PIXEL, 0, (fry + intH) * PIXEL);
+  intGrd.addColorStop(0, 'rgba(255,240,150,0.95)');
+  intGrd.addColorStop(1, 'rgba(255,200,70,0.6)');
+  ctx.fillStyle = intGrd;
+  ctx.fillRect((frx + 1) * PIXEL, (fry + 1) * PIXEL, (frw - 2) * PIXEL, intH * PIXEL);
+
+  // shelves
+  ctx.fillStyle = 'rgba(120,90,40,0.5)';
+  ctx.fillRect((frx + 1) * PIXEL, (fry + Math.floor(frh * 0.22)) * PIXEL, (frw - 2) * PIXEL, PIXEL);
+  ctx.fillRect((frx + 1) * PIXEL, (fry + Math.floor(frh * 0.42)) * PIXEL, (frw - 2) * PIXEL, PIXEL);
+
+  // items: milk, OJ, jar, leftovers
+  ctx.fillStyle = '#e0d8c8'; ctx.fillRect((frx+2)*PIXEL, (fry+2)*PIXEL, 2*PIXEL, 5*PIXEL); // milk
+  ctx.fillStyle = '#c8d0b8'; ctx.fillRect((frx+2)*PIXEL, (fry+1)*PIXEL, 2*PIXEL, PIXEL);   // lid
+  ctx.fillStyle = '#c06010'; ctx.fillRect((frx+5)*PIXEL, (fry+2)*PIXEL, 2*PIXEL, 4*PIXEL); // OJ
+  ctx.fillStyle = '#486830'; ctx.fillRect((frx+8)*PIXEL, (fry+3)*PIXEL, 2*PIXEL, 3*PIXEL); // jar
+  ctx.fillStyle = '#b0902a'; ctx.fillRect((frx+2)*PIXEL, (fry+Math.floor(frh*0.44))*PIXEL, 5*PIXEL, 2*PIXEL); // egg
+
+  // freezer
+  ctx.fillStyle = '#1a1e28';
+  ctx.fillRect((frx+1)*PIXEL, (fry+Math.floor(frh*0.64))*PIXEL, (frw-2)*PIXEL, Math.floor(frh*0.34)*PIXEL);
+  ctx.fillStyle = 'rgba(80,90,120,0.25)';
+  ctx.fillRect((frx+1)*PIXEL, (fry+Math.floor(frh*0.64))*PIXEL, (frw-2)*PIXEL, PIXEL);
+
+  // open door (swung left, edge visible)
+  ctx.fillStyle = '#222018';
+  ctx.fillRect((frx - 3) * PIXEL, fry * PIXEL, 3 * PIXEL, frh * PIXEL);
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect((frx - 3) * PIXEL, fry * PIXEL, PIXEL, frh * PIXEL);
+  // handle
+  ctx.fillStyle = '#484038';
+  ctx.fillRect((frx - 1) * PIXEL, (fry + Math.floor(frh * 0.32)) * PIXEL, PIXEL, 3 * PIXEL);
+
+  // === KITCHEN OBJECTS on counter ===
+
+  // Kettle — dark, left of centre
+  const kx = Math.floor(W * 0.44), ky = cy - 7;
+  ctx.fillStyle = '#1c1208';
+  ctx.fillRect(kx*PIXEL,       (ky+2)*PIXEL, 6*PIXEL, 5*PIXEL); // body
+  ctx.fillRect((kx+1)*PIXEL,    ky*PIXEL,    4*PIXEL, 3*PIXEL); // domed top
+  ctx.fillRect((kx+6)*PIXEL,   (ky+2)*PIXEL, 3*PIXEL, 2*PIXEL); // spout
+  ctx.fillRect((kx-2)*PIXEL,   (ky+2)*PIXEL, 2*PIXEL, 3*PIXEL); // handle
+  ctx.fillStyle = '#2e1e10'; // highlight
+  ctx.fillRect(kx*PIXEL, (ky+2)*PIXEL, PIXEL, 5*PIXEL);
+  // lid knob
+  ctx.fillStyle = '#5a3818';
+  ctx.fillRect((kx+2)*PIXEL, (ky-1)*PIXEL, 2*PIXEL, PIXEL);
+
+  // Mug — next to kettle
+  const mx = Math.floor(W * 0.56), my = cy - 5;
+  ctx.fillStyle = '#3a2010';
+  ctx.fillRect(mx*PIXEL,     my*PIXEL,    4*PIXEL, 4*PIXEL);
+  ctx.fillStyle = '#4e2e18';
+  ctx.fillRect(mx*PIXEL,     my*PIXEL,    4*PIXEL, PIXEL); // rim
+  ctx.fillStyle = '#281408';
+  ctx.fillRect((mx+4)*PIXEL, (my+1)*PIXEL, 2*PIXEL, 2*PIXEL); // handle
+  // hot drink inside
+  ctx.fillStyle = '#6a3010';
+  ctx.fillRect((mx+1)*PIXEL, (my+1)*PIXEL, 2*PIXEL, 2*PIXEL);
+  // steam
+  ctx.fillStyle = 'rgba(255,220,160,0.18)';
+  ctx.fillRect((mx+1)*PIXEL, (my-2)*PIXEL, PIXEL, 2*PIXEL);
+  ctx.fillRect((mx+2)*PIXEL, (my-3)*PIXEL, PIXEL, 3*PIXEL);
+  ctx.fillRect((mx+3)*PIXEL, (my-2)*PIXEL, PIXEL, 2*PIXEL);
+
+  // Cutting board + items
+  const cbx = Math.floor(W * 0.64), cby = cy - 3;
+  ctx.fillStyle = '#3a2010';
+  ctx.fillRect(cbx*PIXEL, cby*PIXEL, 9*PIXEL, 3*PIXEL);
+  ctx.fillStyle = '#4a2e18';
+  ctx.fillRect(cbx*PIXEL, cby*PIXEL, 9*PIXEL, PIXEL);
+  // knife on board
+  ctx.fillStyle = '#c8c0b0';
+  ctx.fillRect((cbx+1)*PIXEL, (cby-1)*PIXEL, 6*PIXEL, PIXEL);
+  ctx.fillStyle = '#2e1a08';
+  ctx.fillRect((cbx+6)*PIXEL, (cby-1)*PIXEL, 2*PIXEL, PIXEL); // handle
+
+  // Teapot — right side
+  const tx = Math.floor(W * 0.76), ty = cy - 7;
+  ctx.fillStyle = '#2a1808';
+  ctx.fillRect(tx*PIXEL,     (ty+2)*PIXEL, 7*PIXEL, 5*PIXEL);
+  ctx.fillRect((tx+1)*PIXEL,  ty*PIXEL,    5*PIXEL, 3*PIXEL);
+  ctx.fillRect((tx+7)*PIXEL, (ty+3)*PIXEL, 3*PIXEL, 2*PIXEL); // spout
+  ctx.fillRect((tx-2)*PIXEL, (ty+2)*PIXEL, 2*PIXEL, 3*PIXEL); // handle
+  ctx.fillStyle = '#3e2410';
+  ctx.fillRect(tx*PIXEL, (ty+2)*PIXEL, PIXEL, 5*PIXEL);
+  // lid
+  ctx.fillStyle = '#1c1006';
+  ctx.fillRect((tx+2)*PIXEL, (ty-1)*PIXEL, 3*PIXEL, PIXEL);
+  ctx.fillRect((tx+3)*PIXEL, (ty-2)*PIXEL, PIXEL, PIXEL);
+
+  // Small plant pot on counter far right
+  const plx = Math.floor(W * 0.90), ply = cy - 7;
+  ctx.fillStyle = '#3a1e08'; // pot
+  ctx.fillRect(plx*PIXEL, (ply+4)*PIXEL, 4*PIXEL, 3*PIXEL);
+  ctx.fillStyle = '#2a1808';
+  ctx.fillRect((plx+1)*PIXEL, (ply+3)*PIXEL, 2*PIXEL, PIXEL); // pot top
+  ctx.fillStyle = '#1e380e'; // stems
+  ctx.fillRect((plx+1)*PIXEL, ply*PIXEL,       PIXEL, 4*PIXEL);
+  ctx.fillRect((plx+2)*PIXEL, (ply+1)*PIXEL,   PIXEL, 3*PIXEL);
+  ctx.fillRect((plx+3)*PIXEL, (ply+2)*PIXEL,   PIXEL, 2*PIXEL);
+  ctx.fillStyle = '#2a5012'; // leaf highlights
+  ctx.fillRect(plx*PIXEL,     (ply+1)*PIXEL,   PIXEL, 2*PIXEL);
+  ctx.fillRect((plx+1)*PIXEL, (ply-1)*PIXEL,   PIXEL, PIXEL);
+
+  // Hanging bulb / under-cabinet light strip
+  const lightY = cabY + Math.floor(H * 0.14) + 1;
+  ctx.fillStyle = 'rgba(255,200,80,0.5)';
+  ctx.fillRect(0, lightY * PIXEL, canvas.width, PIXEL);
+  ctx.fillStyle = 'rgba(255,180,60,0.12)';
+  ctx.fillRect(0, (lightY+1)*PIXEL, canvas.width, 3*PIXEL);
+
+  // Warm ambient pool on counter from above light
+  const lightPool = ctx.createLinearGradient(0, lightY * PIXEL, 0, (cy + 4) * PIXEL);
+  lightPool.addColorStop(0, 'rgba(255,200,80,0.08)');
+  lightPool.addColorStop(1, 'rgba(255,180,60,0)');
+  ctx.fillStyle = lightPool;
+  ctx.fillRect(0, lightY * PIXEL, canvas.width, (cy + 4 - lightY) * PIXEL);
+
+  // Window light pool on counter surface
+  const wPool = ctx.createRadialGradient(
+    (wx + ww/2)*PIXEL, cy*PIXEL, 0,
+    (wx + ww/2)*PIXEL, cy*PIXEL, ww * 0.7 * PIXEL
+  );
+  wPool.addColorStop(0, 'rgba(100,120,200,0.07)');
+  wPool.addColorStop(1, 'rgba(80,100,180,0)');
+  ctx.fillStyle = wPool;
+  ctx.fillRect((wx-4)*PIXEL, cy*PIXEL, (ww+8)*PIXEL, 8*PIXEL);
 }
 
 function drawLake(W, H) {
@@ -800,196 +967,341 @@ function drawLake(W, H) {
 }
 
 function drawHotel(W, H) {
-  const floorY = Math.floor(H * 0.78);
+  const floorY = Math.floor(H * 0.76);
 
-  // === WALLS — dark brown gradient ===
+  // === WALLS — rich warm dark brown, lighter centre from chandelier ===
   for (let y = 0; y < floorY; y++) {
     const t = y / floorY;
-    const r = Math.floor(22 + t * 16);
-    const g = Math.floor(16 + t * 10);
-    const b = Math.floor(14 + t * 8);
+    const r = Math.floor(24 + t * 18);
+    const g = Math.floor(17 + t * 12);
+    const b = Math.floor(14 + t * 9);
     ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
   }
 
-  // === DIAMOND WALLPAPER ===
-  const dSize = 6;
-  for (let y = 2; y < floorY-2; y++) {
+  // === DIAMOND WALLPAPER — elegant, visible ===
+  const dSize = 5;
+  for (let y = 1; y < floorY-1; y++) {
     for (let x = 0; x < W; x++) {
       const dx = ((x % (dSize*2)) + dSize*2) % (dSize*2);
       const dy = ((y % (dSize*2)) + dSize*2) % (dSize*2);
       const dist = Math.abs(dx - dSize) + Math.abs(dy - dSize);
       if (dist === dSize) {
-        ctx.fillStyle = 'rgba(90,60,40,0.2)';
+        ctx.fillStyle = 'rgba(110,75,45,0.28)';
         ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
-      }
-      if (dist === dSize - 1) {
-        ctx.fillStyle = 'rgba(100,70,45,0.08)';
+      } else if (dist === dSize - 1) {
+        ctx.fillStyle = 'rgba(95,65,38,0.1)';
         ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
       }
     }
   }
 
-  // === FLOOR — dark wood ===
+  // === WAINSCOTING — lower wall panel ===
+  const wainY = Math.floor(floorY * 0.72);
+  ctx.fillStyle = '#2e1e0c';
+  ctx.fillRect(0, wainY*PIXEL, canvas.width, (floorY-wainY)*PIXEL);
+  // wainscot top rail
+  ctx.fillStyle = '#5a3a18';
+  ctx.fillRect(0, wainY*PIXEL, canvas.width, 2*PIXEL);
+  ctx.fillStyle = '#7a5028';
+  ctx.fillRect(0, wainY*PIXEL, canvas.width, PIXEL);
+  // wainscot panels
+  for (let x = 2; x < W; x += 14) {
+    ctx.fillStyle = '#261608';
+    ctx.fillRect(x*PIXEL, (wainY+3)*PIXEL, 12*PIXEL, (floorY-wainY-5)*PIXEL);
+    ctx.fillStyle = '#3a2410';
+    ctx.fillRect(x*PIXEL, (wainY+3)*PIXEL, 12*PIXEL, PIXEL);
+    ctx.fillRect(x*PIXEL, (wainY+3)*PIXEL, PIXEL, (floorY-wainY-5)*PIXEL);
+  }
+
+  // === FLOOR — rich parquet dark wood ===
   for (let x = 0; x < W; x++) {
     for (let y = floorY; y < H; y++) {
-      const plank = Math.floor(x/4) % 2;
-      ctx.fillStyle = plank ? '#18100a' : '#1c1208';
+      const plank = Math.floor(x/3) % 3;
+      const c = plank === 0 ? 16 : plank === 1 ? 20 : 14;
+      ctx.fillStyle = `rgb(${c+4},${c},${Math.floor(c*0.5)})`;
       ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
     }
   }
-  ctx.fillStyle = '#301e0e';
+  // floor plank lines
+  ctx.fillStyle = 'rgba(8,5,2,0.5)';
+  for (let x = 6; x < W; x += 6) {
+    ctx.fillRect(x*PIXEL, floorY*PIXEL, PIXEL, (H-floorY)*PIXEL);
+  }
+  ctx.fillStyle = '#3a2010';
   ctx.fillRect(0, floorY*PIXEL, canvas.width, PIXEL);
 
   // === CHANDELIER ===
   const cx = Math.floor(W/2), chandY = 3;
-  const cGrd = ctx.createRadialGradient(cx*PIXEL, chandY*PIXEL, PIXEL, cx*PIXEL, chandY*PIXEL, 22*PIXEL);
-  cGrd.addColorStop(0, 'rgba(255,200,100,0.32)');
+  // large warm glow pool on ceiling
+  const cGrd = ctx.createRadialGradient(cx*PIXEL, 0, 0, cx*PIXEL, chandY*PIXEL, 32*PIXEL);
+  cGrd.addColorStop(0, 'rgba(255,210,110,0.38)');
+  cGrd.addColorStop(0.4,'rgba(255,185,70,0.18)');
   cGrd.addColorStop(1, 'rgba(255,160,50,0)');
   ctx.fillStyle = cGrd;
-  ctx.fillRect((cx-22)*PIXEL, 0, 44*PIXEL, 22*PIXEL);
+  ctx.fillRect((cx-32)*PIXEL, 0, 64*PIXEL, 28*PIXEL);
+
+  // ceiling rose
+  ctx.fillStyle = '#7a6040';
+  ctx.fillRect((cx-2)*PIXEL, 0, 4*PIXEL, 2*PIXEL);
   // chain
-  ctx.fillStyle = '#7a6030';
-  ctx.fillRect(cx*PIXEL, 0, PIXEL, 4*PIXEL);
-  // main arms
-  ctx.fillStyle = '#906830';
-  ctx.fillRect((cx-8)*PIXEL, chandY*PIXEL, 17*PIXEL, PIXEL);
-  ctx.fillRect((cx-6)*PIXEL, (chandY+1)*PIXEL, 13*PIXEL, PIXEL);
-  // drop arms
-  for (const off of [-7, -3, 0, 3, 7]) {
-    ctx.fillStyle = '#906830';
-    ctx.fillRect((cx+off)*PIXEL, (chandY+1)*PIXEL, PIXEL, 2*PIXEL);
+  ctx.fillStyle = '#8a6828';
+  ctx.fillRect((cx)*PIXEL, 0, PIXEL, chandY*PIXEL);
+  // main cross bar
+  ctx.fillStyle = '#a07830';
+  ctx.fillRect((cx-10)*PIXEL, chandY*PIXEL,     21*PIXEL, 2*PIXEL);
+  ctx.fillRect((cx-8)*PIXEL,  (chandY+2)*PIXEL, 17*PIXEL, PIXEL);
+  // arms
+  for (const off of [-9, -5, -1, 3, 7]) {
+    ctx.fillStyle = '#a07830';
+    ctx.fillRect((cx+off)*PIXEL, (chandY+2)*PIXEL, PIXEL, 3*PIXEL);
+    // drip cup
+    ctx.fillStyle = '#8a6028';
+    ctx.fillRect((cx+off-1)*PIXEL, (chandY+5)*PIXEL, 3*PIXEL, PIXEL);
     // candle
-    ctx.fillStyle = '#d4b060';
-    ctx.fillRect((cx+off)*PIXEL, (chandY+3)*PIXEL, PIXEL, 2*PIXEL);
-    // flame
-    ctx.fillStyle = '#fff080';
+    ctx.fillStyle = '#e8d4a0';
+    ctx.fillRect((cx+off)*PIXEL, (chandY+4)*PIXEL, PIXEL, 3*PIXEL);
+    // flame — layered
+    ctx.fillStyle = '#fff8a0';
+    ctx.fillRect((cx+off)*PIXEL, (chandY+3)*PIXEL, PIXEL, PIXEL);
+    ctx.fillStyle = '#ffe050';
     ctx.fillRect((cx+off)*PIXEL, (chandY+2)*PIXEL, PIXEL, PIXEL);
-    ctx.fillStyle = 'rgba(255,230,100,0.35)';
-    ctx.fillRect((cx+off-1)*PIXEL, (chandY+1)*PIXEL, 3*PIXEL, 3*PIXEL);
+    // soft per-flame glow
+    ctx.fillStyle = 'rgba(255,225,90,0.18)';
+    ctx.fillRect((cx+off-2)*PIXEL, (chandY)*PIXEL, 5*PIXEL, 6*PIXEL);
   }
 
-  // === WALL SCONCES ===
+  // === WALL SCONCES — left and right ===
   function drawSconce(sx, sy) {
-    const sg = ctx.createRadialGradient(sx*PIXEL,sy*PIXEL,0,sx*PIXEL,sy*PIXEL,10*PIXEL);
-    sg.addColorStop(0,'rgba(255,185,70,0.28)');
-    sg.addColorStop(1,'rgba(255,150,40,0)');
+    // large soft glow
+    const sg = ctx.createRadialGradient(sx*PIXEL, (sy-2)*PIXEL, 0, sx*PIXEL, (sy-2)*PIXEL, 13*PIXEL);
+    sg.addColorStop(0, 'rgba(255,195,80,0.32)');
+    sg.addColorStop(0.5,'rgba(255,165,50,0.14)');
+    sg.addColorStop(1, 'rgba(255,140,30,0)');
     ctx.fillStyle = sg;
-    ctx.fillRect((sx-10)*PIXEL,(sy-8)*PIXEL,20*PIXEL,16*PIXEL);
+    ctx.fillRect((sx-13)*PIXEL, (sy-12)*PIXEL, 26*PIXEL, 20*PIXEL);
+    // back plate
     ctx.fillStyle = '#6a4820';
-    ctx.fillRect((sx-1)*PIXEL, sy*PIXEL, 3*PIXEL, 3*PIXEL);
-    ctx.fillRect((sx-2)*PIXEL, (sy+1)*PIXEL, 5*PIXEL, PIXEL);
+    ctx.fillRect((sx-2)*PIXEL, sy*PIXEL, 4*PIXEL, 4*PIXEL);
+    // arm
+    ctx.fillRect((sx-3)*PIXEL, (sy+1)*PIXEL, 6*PIXEL, 2*PIXEL);
+    // bobeche (drip plate)
+    ctx.fillStyle = '#8a6030';
+    ctx.fillRect((sx-2)*PIXEL, (sy-1)*PIXEL, 5*PIXEL, PIXEL);
+    // candles
     for (let i = -1; i <= 1; i++) {
-      ctx.fillStyle = '#c8a040';
-      ctx.fillRect((sx+i)*PIXEL,(sy-2)*PIXEL,PIXEL,2*PIXEL);
-      ctx.fillStyle = '#ffee70';
-      ctx.fillRect((sx+i)*PIXEL,(sy-3)*PIXEL,PIXEL,PIXEL);
+      ctx.fillStyle = '#e8d490';
+      ctx.fillRect((sx+i)*PIXEL, (sy-4)*PIXEL, PIXEL, 3*PIXEL);
+      ctx.fillStyle = '#fff090';
+      ctx.fillRect((sx+i)*PIXEL, (sy-5)*PIXEL, PIXEL, PIXEL);
+      ctx.fillStyle = '#ffd840';
+      ctx.fillRect((sx+i)*PIXEL, (sy-6)*PIXEL, PIXEL, PIXEL);
     }
   }
-  drawSconce(Math.floor(W*0.09), Math.floor(H*0.27));
-  drawSconce(Math.floor(W*0.91), Math.floor(H*0.27));
+  drawSconce(Math.floor(W*0.08), Math.floor(H*0.3));
+  drawSconce(Math.floor(W*0.92), Math.floor(H*0.3));
 
-  // === FRAMED PAINTING ===
-  const fpx = Math.floor(W*0.36), fpy = Math.floor(H*0.09);
-  const fpw = Math.floor(W*0.28), fph = Math.floor(H*0.23);
-  // shadow
-  ctx.fillStyle = '#080503';
+  // === TALL ARCHED DOORWAY / WINDOW — back wall ===
+  const awx = Math.floor(W*0.38), awy = Math.floor(H*0.04);
+  const aww = Math.floor(W*0.24), awh = Math.floor(H*0.42);
+  const archR = Math.floor(aww / 2);
+
+  // warm light behind (like the reference — golden exterior light)
+  const archGlow = ctx.createRadialGradient(
+    (awx+aww/2)*PIXEL, (awy+archR)*PIXEL, 0,
+    (awx+aww/2)*PIXEL, (awy+archR)*PIXEL, aww*PIXEL
+  );
+  archGlow.addColorStop(0,'rgba(255,230,140,0.55)');
+  archGlow.addColorStop(0.4,'rgba(255,200,80,0.25)');
+  archGlow.addColorStop(1,'rgba(255,170,50,0)');
+  ctx.fillStyle = archGlow;
+  ctx.fillRect((awx-10)*PIXEL, 0, (aww+20)*PIXEL, (awh+10)*PIXEL);
+
+  // arch frame — dark ornate
+  ctx.fillStyle = '#2a1a08';
+  ctx.fillRect(awx*PIXEL, (awy+archR)*PIXEL, aww*PIXEL, (awh-archR)*PIXEL);
+  // arch top (semicircle)
+  for (let dy = -archR; dy <= 0; dy++) {
+    const hw = Math.floor(Math.sqrt(Math.max(0, archR*archR - dy*dy)));
+    ctx.fillRect((awx+archR-hw)*PIXEL, (awy+archR+dy)*PIXEL, hw*2*PIXEL, PIXEL);
+  }
+
+  // arch interior glow fill
+  ctx.fillStyle = '#f8e0a0';
+  ctx.fillRect((awx+2)*PIXEL, (awy+archR)*PIXEL, (aww-4)*PIXEL, (awh-archR-2)*PIXEL);
+  for (let dy = -archR+2; dy <= 0; dy++) {
+    const hw = Math.floor(Math.sqrt(Math.max(0, (archR-2)*(archR-2) - dy*dy)));
+    if (hw > 0) ctx.fillRect((awx+archR-hw)*PIXEL, (awy+archR+dy)*PIXEL, hw*2*PIXEL, PIXEL);
+  }
+  // interior gradient — brighter top
+  const intGrd2 = ctx.createLinearGradient(0, awy*PIXEL, 0, (awy+awh)*PIXEL);
+  intGrd2.addColorStop(0,'rgba(255,245,190,0.7)');
+  intGrd2.addColorStop(1,'rgba(255,200,100,0.3)');
+  ctx.fillStyle = intGrd2;
+  ctx.fillRect((awx+2)*PIXEL, (awy+archR)*PIXEL, (aww-4)*PIXEL, (awh-archR-2)*PIXEL);
+
+  // outer arch columns / pilasters
+  ctx.fillStyle = '#4a3018';
+  ctx.fillRect((awx-3)*PIXEL, (awy+archR-2)*PIXEL, 3*PIXEL, (awh-archR+2)*PIXEL);
+  ctx.fillRect((awx+aww)*PIXEL, (awy+archR-2)*PIXEL, 3*PIXEL, (awh-archR+2)*PIXEL);
+  // column capital detail
+  ctx.fillStyle = '#6a4828';
+  ctx.fillRect((awx-4)*PIXEL, (awy+archR-2)*PIXEL, 5*PIXEL, 2*PIXEL);
+  ctx.fillRect((awx+aww-1)*PIXEL, (awy+archR-2)*PIXEL, 5*PIXEL, 2*PIXEL);
+
+  // silhouette of plant/urn in doorway base
+  ctx.fillStyle = '#3a2810';
+  const urnX = awx + Math.floor(aww*0.1), urnY = awy+awh-6;
+  ctx.fillRect(urnX*PIXEL, urnY*PIXEL, 4*PIXEL, 6*PIXEL);
+  ctx.fillRect((urnX-1)*PIXEL, (urnY+4)*PIXEL, 6*PIXEL, 2*PIXEL);
+  // plant leaves
+  ctx.fillStyle = '#284820';
+  ctx.fillRect((urnX-1)*PIXEL, (urnY-4)*PIXEL, PIXEL, 4*PIXEL);
+  ctx.fillRect(urnX*PIXEL,     (urnY-6)*PIXEL, PIXEL, 6*PIXEL);
+  ctx.fillRect((urnX+2)*PIXEL, (urnY-5)*PIXEL, PIXEL, 5*PIXEL);
+  ctx.fillRect((urnX+3)*PIXEL, (urnY-3)*PIXEL, PIXEL, 3*PIXEL);
+
+  // === FRAMED PAINTING — right of arch ===
+  const fpx = Math.floor(W*0.68), fpy = Math.floor(H*0.1);
+  const fpw = Math.floor(W*0.22), fph = Math.floor(H*0.28);
+  // drop shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.fillRect((fpx+2)*PIXEL,(fpy+2)*PIXEL,fpw*PIXEL,fph*PIXEL);
-  // outer frame
-  ctx.fillStyle = '#4a2e10';
+  // ornate frame — gold border then dark
+  ctx.fillStyle = '#7a5820';
   ctx.fillRect(fpx*PIXEL,fpy*PIXEL,fpw*PIXEL,fph*PIXEL);
-  // inner frame
-  ctx.fillStyle = '#3a2208';
+  ctx.fillStyle = '#4a2e0c';
   ctx.fillRect((fpx+2)*PIXEL,(fpy+2)*PIXEL,(fpw-4)*PIXEL,(fph-4)*PIXEL);
-  // painting interior — moody teal scene
-  ctx.fillStyle = '#1e2c28';
+  // painting scene inside — warm reddish interior
+  ctx.fillStyle = '#2e1c10';
   ctx.fillRect((fpx+3)*PIXEL,(fpy+3)*PIXEL,(fpw-6)*PIXEL,(fph-6)*PIXEL);
-  // vague draped figure / sheets
-  ctx.fillStyle = '#b0a898';
-  ctx.fillRect((fpx+4)*PIXEL,(fpy+fph-9)*PIXEL,(fpw-8)*PIXEL,2*PIXEL);
-  ctx.fillStyle = '#e8e0d0';
-  ctx.fillRect((fpx+5)*PIXEL,(fpy+fph-10)*PIXEL,(fpw-10)*PIXEL,PIXEL);
-  ctx.fillStyle = '#384840';
-  ctx.fillRect((fpx+4)*PIXEL,(fpy+4)*PIXEL,2*PIXEL,(fph-12)*PIXEL);
-  ctx.fillRect((fpx+fpw-7)*PIXEL,(fpy+5)*PIXEL,2*PIXEL,(fph-13)*PIXEL);
-  // frame gold highlight
-  ctx.fillStyle = '#6a4818';
+  // painted scene shapes — draped figure suggestion
+  ctx.fillStyle = '#c0a888';
+  ctx.fillRect((fpx+4)*PIXEL,(fpy+fph-10)*PIXEL,(fpw-8)*PIXEL,2*PIXEL);
+  ctx.fillStyle = '#e0d0b8';
+  ctx.fillRect((fpx+5)*PIXEL,(fpy+fph-11)*PIXEL,(fpw-10)*PIXEL,PIXEL);
+  ctx.fillStyle = '#403828';
+  ctx.fillRect((fpx+4)*PIXEL,(fpy+4)*PIXEL,2*PIXEL,(fph-13)*PIXEL);
+  ctx.fillRect((fpx+fpw-7)*PIXEL,(fpy+5)*PIXEL,2*PIXEL,(fph-14)*PIXEL);
+  // warm tone mid area
+  ctx.fillStyle = 'rgba(160,100,50,0.25)';
+  ctx.fillRect((fpx+4)*PIXEL,(fpy+3)*PIXEL,(fpw-8)*PIXEL,Math.floor(fph*0.5)*PIXEL);
+  // frame gold corners
+  ctx.fillStyle = '#c0901c';
   ctx.fillRect(fpx*PIXEL,fpy*PIXEL,fpw*PIXEL,PIXEL);
   ctx.fillRect(fpx*PIXEL,fpy*PIXEL,PIXEL,fph*PIXEL);
+  ctx.fillStyle = '#a07018';
+  ctx.fillRect(fpx*PIXEL,(fpy+fph-1)*PIXEL,fpw*PIXEL,PIXEL);
+  ctx.fillRect((fpx+fpw-1)*PIXEL,fpy*PIXEL,PIXEL,fph*PIXEL);
 
-  // === BED ===
-  const bx = Math.floor(W*0.24), bw = Math.floor(W*0.52);
-  const headY = Math.floor(H*0.5), headH = Math.floor(H*0.22);
+  // === BED — ornate dark ===
+  const bx = Math.floor(W*0.26), bw = Math.floor(W*0.48);
+  const headY = Math.floor(H*0.52), headH = Math.floor(H*0.2);
+  // shadow under bed
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect((bx-2)*PIXEL,(headY+headH+4)*PIXEL,(bw+4)*PIXEL,4*PIXEL);
   // posts
-  ctx.fillStyle = '#161008';
-  ctx.fillRect(bx*PIXEL,(headY-3)*PIXEL,3*PIXEL,(headH+3)*PIXEL);
-  ctx.fillRect((bx+bw-3)*PIXEL,(headY-3)*PIXEL,3*PIXEL,(headH+3)*PIXEL);
-  // post tops
-  ctx.fillStyle = '#2a1a0c';
-  ctx.fillRect((bx-1)*PIXEL,(headY-4)*PIXEL,5*PIXEL,2*PIXEL);
-  ctx.fillRect((bx+bw-4)*PIXEL,(headY-4)*PIXEL,5*PIXEL,2*PIXEL);
+  ctx.fillStyle = '#100a04';
+  ctx.fillRect(bx*PIXEL,(headY-4)*PIXEL,3*PIXEL,(headH+4)*PIXEL);
+  ctx.fillRect((bx+bw-3)*PIXEL,(headY-4)*PIXEL,3*PIXEL,(headH+4)*PIXEL);
+  // post finials
+  ctx.fillStyle = '#3a2412';
+  ctx.fillRect((bx-1)*PIXEL,(headY-6)*PIXEL,5*PIXEL,2*PIXEL);
+  ctx.fillRect((bx+bw-4)*PIXEL,(headY-6)*PIXEL,5*PIXEL,2*PIXEL);
+  ctx.fillStyle = '#5a3a1c';
+  ctx.fillRect(bx*PIXEL,(headY-7)*PIXEL,3*PIXEL,PIXEL);
+  ctx.fillRect((bx+bw-3)*PIXEL,(headY-7)*PIXEL,3*PIXEL,PIXEL);
   // headboard fill
-  ctx.fillStyle = '#1a1008';
+  ctx.fillStyle = '#160e06';
   ctx.fillRect((bx+3)*PIXEL,headY*PIXEL,(bw-6)*PIXEL,headH*PIXEL);
-  // headboard arch carved detail
-  ctx.fillStyle = '#221610';
-  const archCx = Math.floor(bx+bw/2);
-  for (let i=-Math.floor(bw*0.18); i<=Math.floor(bw*0.18); i++) {
-    const ah = Math.floor(Math.sqrt(Math.max(0,Math.pow(bw*0.18,2)-i*i))*0.35);
-    if(ah>0) ctx.fillRect((archCx+i)*PIXEL,(headY+2)*PIXEL,PIXEL,ah*PIXEL);
+  // headboard arch
+  ctx.fillStyle = '#201408';
+  const archCx2 = Math.floor(bx+bw/2);
+  for (let i=-Math.floor(bw*0.2); i<=Math.floor(bw*0.2); i++) {
+    const ah = Math.floor(Math.sqrt(Math.max(0,Math.pow(bw*0.2,2)-i*i))*0.32);
+    if(ah>0) ctx.fillRect((archCx2+i)*PIXEL,(headY+2)*PIXEL,PIXEL,ah*PIXEL);
   }
-  // headboard panel lines
-  ctx.fillStyle = '#120c06';
-  ctx.fillRect((bx+4)*PIXEL,(headY+1)*PIXEL,PIXEL,(headH-2)*PIXEL);
-  ctx.fillRect((bx+bw-5)*PIXEL,(headY+1)*PIXEL,PIXEL,(headH-2)*PIXEL);
+  // panel verticals
+  ctx.fillStyle = '#0e0804';
+  ctx.fillRect((bx+5)*PIXEL,(headY+1)*PIXEL,PIXEL,(headH-2)*PIXEL);
+  ctx.fillRect((bx+bw-6)*PIXEL,(headY+1)*PIXEL,PIXEL,(headH-2)*PIXEL);
+  // headboard highlight
+  ctx.fillStyle = '#3a2210';
+  ctx.fillRect((bx+3)*PIXEL,headY*PIXEL,(bw-6)*PIXEL,PIXEL);
+  ctx.fillRect((bx+3)*PIXEL,headY*PIXEL,PIXEL,headH*PIXEL);
 
   const mattY = headY + headH;
-  // mattress
-  ctx.fillStyle = '#c8c0b0';
-  ctx.fillRect((bx+2)*PIXEL,mattY*PIXEL,(bw-4)*PIXEL,4*PIXEL);
+  // mattress — warm ivory
+  ctx.fillStyle = '#d0c8b4';
+  ctx.fillRect((bx+2)*PIXEL,mattY*PIXEL,(bw-4)*PIXEL,5*PIXEL);
+  ctx.fillStyle = '#e0d8c4';
+  ctx.fillRect((bx+2)*PIXEL,mattY*PIXEL,(bw-4)*PIXEL,PIXEL);
   // pillows
-  ctx.fillStyle = '#e0d8c8';
-  ctx.fillRect((bx+4)*PIXEL,mattY*PIXEL,Math.floor(bw*0.18)*PIXEL,3*PIXEL);
-  ctx.fillRect((bx+bw-4-Math.floor(bw*0.18))*PIXEL,mattY*PIXEL,Math.floor(bw*0.18)*PIXEL,3*PIXEL);
-  // dark blanket
-  ctx.fillStyle = '#221810';
-  ctx.fillRect((bx+2)*PIXEL,(mattY+2)*PIXEL,(bw-4)*PIXEL,5*PIXEL);
-  ctx.fillStyle = '#18100a';
-  ctx.fillRect((bx+2)*PIXEL,(mattY+6)*PIXEL,(bw-4)*PIXEL,PIXEL);
-  // blanket wrinkle highlights
-  ctx.fillStyle = '#2e2018';
-  for (let i=3; i<bw-3; i+=6) {
-    ctx.fillRect((bx+i)*PIXEL,(mattY+3)*PIXEL,2*PIXEL,PIXEL);
+  ctx.fillStyle = '#e8e0ce';
+  ctx.fillRect((bx+4)*PIXEL,mattY*PIXEL,Math.floor(bw*0.2)*PIXEL,3*PIXEL);
+  ctx.fillRect((bx+bw-4-Math.floor(bw*0.2))*PIXEL,mattY*PIXEL,Math.floor(bw*0.2)*PIXEL,3*PIXEL);
+  ctx.fillStyle = '#f0e8d8'; // pillow highlight
+  ctx.fillRect((bx+4)*PIXEL,mattY*PIXEL,Math.floor(bw*0.2)*PIXEL,PIXEL);
+  ctx.fillRect((bx+bw-4-Math.floor(bw*0.2))*PIXEL,mattY*PIXEL,Math.floor(bw*0.2)*PIXEL,PIXEL);
+  // dark luxe blanket
+  ctx.fillStyle = '#1e1409';
+  ctx.fillRect((bx+2)*PIXEL,(mattY+2)*PIXEL,(bw-4)*PIXEL,6*PIXEL);
+  ctx.fillStyle = '#2a1c0e'; // blanket fold highlights
+  for (let i=4; i<bw-4; i+=7) {
+    ctx.fillRect((bx+i)*PIXEL,(mattY+3)*PIXEL,2*PIXEL,2*PIXEL);
   }
+  ctx.fillStyle = '#0e0a04';
+  ctx.fillRect((bx+2)*PIXEL,(mattY+7)*PIXEL,(bw-4)*PIXEL,PIXEL);
+  // turned-down corner
+  ctx.fillStyle = '#c8c0b0';
+  ctx.fillRect((bx+bw-14)*PIXEL,(mattY+2)*PIXEL,8*PIXEL,3*PIXEL);
 
   // === NIGHTSTANDS ===
   function drawNightstand(nx, ny) {
-    const nw=8, nh=6;
-    ctx.fillStyle='#161008';
+    const nw=9, nh=7;
+    // shadow
+    ctx.fillStyle='rgba(0,0,0,0.3)';
+    ctx.fillRect((nx+1)*PIXEL,(ny+1)*PIXEL,nw*PIXEL,nh*PIXEL);
+    ctx.fillStyle='#120c06';
     ctx.fillRect(nx*PIXEL,ny*PIXEL,nw*PIXEL,nh*PIXEL);
-    ctx.fillStyle='#241808';
+    // top surface
+    ctx.fillStyle='#281806';
     ctx.fillRect(nx*PIXEL,ny*PIXEL,nw*PIXEL,PIXEL);
-    ctx.fillStyle='#100a04';
+    // drawer lines
+    ctx.fillStyle='#0c0804';
     ctx.fillRect(nx*PIXEL,(ny+3)*PIXEL,nw*PIXEL,PIXEL);
-    // knob
-    ctx.fillStyle='#503820';
-    ctx.fillRect((nx+3)*PIXEL,(ny+1)*PIXEL,2*PIXEL,PIXEL);
-    ctx.fillRect((nx+3)*PIXEL,(ny+4)*PIXEL,2*PIXEL,PIXEL);
-    // candle
-    ctx.fillStyle='#c09040';
-    ctx.fillRect((nx+3)*PIXEL,(ny-3)*PIXEL,2*PIXEL,3*PIXEL);
-    ctx.fillStyle='#ffe050';
-    ctx.fillRect((nx+3)*PIXEL,(ny-4)*PIXEL,2*PIXEL,PIXEL);
-    ctx.fillStyle='#fff8a0';
-    ctx.fillRect((nx+4)*PIXEL,(ny-5)*PIXEL,PIXEL,PIXEL);
-    const cg=ctx.createRadialGradient((nx+4)*PIXEL,(ny-3)*PIXEL,0,(nx+4)*PIXEL,(ny-3)*PIXEL,7*PIXEL);
-    cg.addColorStop(0,'rgba(255,200,80,0.3)');
-    cg.addColorStop(1,'rgba(255,150,40,0)');
+    // knobs
+    ctx.fillStyle='#705030';
+    ctx.fillRect((nx+3)*PIXEL,(ny+1)*PIXEL,3*PIXEL,PIXEL);
+    ctx.fillRect((nx+3)*PIXEL,(ny+4)*PIXEL,3*PIXEL,PIXEL);
+    ctx.fillStyle='#a07840';
+    ctx.fillRect((nx+4)*PIXEL,(ny+1)*PIXEL,PIXEL,PIXEL);
+    ctx.fillRect((nx+4)*PIXEL,(ny+4)*PIXEL,PIXEL,PIXEL);
+    // candle + holder
+    ctx.fillStyle='#704820';
+    ctx.fillRect((nx+3)*PIXEL,(ny-2)*PIXEL,3*PIXEL,2*PIXEL); // holder
+    ctx.fillStyle='#e8d898';
+    ctx.fillRect((nx+4)*PIXEL,(ny-5)*PIXEL,PIXEL,3*PIXEL);   // candle
+    ctx.fillStyle='#ffe870';
+    ctx.fillRect((nx+4)*PIXEL,(ny-6)*PIXEL,PIXEL,PIXEL);     // flame base
+    ctx.fillStyle='#fff8b0';
+    ctx.fillRect((nx+4)*PIXEL,(ny-7)*PIXEL,PIXEL,PIXEL);     // flame tip
+    // candle glow
+    const cg=ctx.createRadialGradient((nx+4)*PIXEL,(ny-5)*PIXEL,0,(nx+4)*PIXEL,(ny-5)*PIXEL,8*PIXEL);
+    cg.addColorStop(0,'rgba(255,210,90,0.35)');
+    cg.addColorStop(1,'rgba(255,160,40,0)');
     ctx.fillStyle=cg;
-    ctx.fillRect((nx-3)*PIXEL,(ny-8)*PIXEL,14*PIXEL,10*PIXEL);
+    ctx.fillRect((nx-4)*PIXEL,(ny-11)*PIXEL,16*PIXEL,12*PIXEL);
   }
-  drawNightstand(bx-10, floorY-7);
-  drawNightstand(bx+bw+2, floorY-7);
+  drawNightstand(bx - 11, floorY - 8);
+  drawNightstand(bx + bw + 2, floorY - 8);
+
+  // === WARM FLOOR REFLECTION from chandelier ===
+  const floorRef = ctx.createRadialGradient(cx*PIXEL, floorY*PIXEL, 0, cx*PIXEL, floorY*PIXEL, 22*PIXEL);
+  floorRef.addColorStop(0,'rgba(255,200,80,0.12)');
+  floorRef.addColorStop(1,'rgba(255,170,50,0)');
+  ctx.fillStyle = floorRef;
+  ctx.fillRect((cx-22)*PIXEL, floorY*PIXEL, 44*PIXEL, 8*PIXEL);
 }
 
 function drawHospital(W, H) {
