@@ -753,29 +753,46 @@ function drawKitchen(W, H) {
   ctx.fillRect(plx*PIXEL,     (ply+1)*PIXEL,   PIXEL, 2*PIXEL);
   ctx.fillRect((plx+1)*PIXEL, (ply-1)*PIXEL,   PIXEL, PIXEL);
 
-  // Hanging bulb / under-cabinet light strip
-  const lightY = cabY + Math.floor(H * 0.14) + 1;
-  ctx.fillStyle = 'rgba(255,200,80,0.5)';
-  ctx.fillRect(0, lightY * PIXEL, canvas.width, PIXEL);
-  ctx.fillStyle = 'rgba(255,180,60,0.12)';
-  ctx.fillRect(0, (lightY+1)*PIXEL, canvas.width, 3*PIXEL);
-
-  // Warm ambient pool on counter from above light
-  const lightPool = ctx.createLinearGradient(0, lightY * PIXEL, 0, (cy + 4) * PIXEL);
-  lightPool.addColorStop(0, 'rgba(255,200,80,0.08)');
-  lightPool.addColorStop(1, 'rgba(255,180,60,0)');
-  ctx.fillStyle = lightPool;
-  ctx.fillRect(0, lightY * PIXEL, canvas.width, (cy + 4 - lightY) * PIXEL);
-
-  // Window light pool on counter surface
-  const wPool = ctx.createRadialGradient(
-    (wx + ww/2)*PIXEL, cy*PIXEL, 0,
-    (wx + ww/2)*PIXEL, cy*PIXEL, ww * 0.7 * PIXEL
+  // === PENDANT BULB — "still going", hangs centre over counter ===
+  // The key emotional image: the light that's still on
+  const bulbX = Math.floor(W * 0.50);
+  const bulbY = Math.floor(H * 0.50); // hangs just above counter
+  // cord from ceiling
+  ctx.fillStyle = '#1a1208';
+  ctx.fillRect(bulbX*PIXEL, Math.floor(H*0.09)*PIXEL, PIXEL, (bulbY - Math.floor(H*0.09))*PIXEL);
+  // shade — conical, dark outside warm inside
+  ctx.fillStyle = '#1e1208';
+  ctx.fillRect((bulbX-4)*PIXEL, (bulbY-3)*PIXEL, 9*PIXEL, PIXEL);
+  ctx.fillRect((bulbX-3)*PIXEL, (bulbY-2)*PIXEL, 7*PIXEL, PIXEL);
+  ctx.fillRect((bulbX-2)*PIXEL, (bulbY-1)*PIXEL, 5*PIXEL, PIXEL);
+  // bulb glow — flickers slightly
+  const flick = 0.88 + Math.random()*0.12;
+  ctx.fillStyle = `rgba(255,230,140,${flick})`;
+  ctx.fillRect((bulbX-1)*PIXEL, bulbY*PIXEL, 3*PIXEL, 2*PIXEL);
+  // large warm cone of light downward onto counter
+  const coneGrd = ctx.createRadialGradient(
+    bulbX*PIXEL, bulbY*PIXEL, PIXEL,
+    bulbX*PIXEL, (cy+2)*PIXEL, Math.floor(W*0.35)*PIXEL
   );
-  wPool.addColorStop(0, 'rgba(100,120,200,0.07)');
-  wPool.addColorStop(1, 'rgba(80,100,180,0)');
-  ctx.fillStyle = wPool;
-  ctx.fillRect((wx-4)*PIXEL, cy*PIXEL, (ww+8)*PIXEL, 8*PIXEL);
+  coneGrd.addColorStop(0,   `rgba(255,225,120,${0.32*flick})`);
+  coneGrd.addColorStop(0.3, `rgba(255,200,90,${0.16*flick})`);
+  coneGrd.addColorStop(0.7, `rgba(255,180,60,${0.07*flick})`);
+  coneGrd.addColorStop(1,   'rgba(255,160,40,0)');
+  ctx.fillStyle = coneGrd;
+  ctx.fillRect(0, bulbY*PIXEL, canvas.width, (cy+4-bulbY)*PIXEL);
+  // pool on counter surface
+  const counterPool = ctx.createRadialGradient(
+    bulbX*PIXEL, cy*PIXEL, 0,
+    bulbX*PIXEL, cy*PIXEL, Math.floor(W*0.28)*PIXEL
+  );
+  counterPool.addColorStop(0,   `rgba(255,210,100,${0.22*flick})`);
+  counterPool.addColorStop(0.5, `rgba(255,190,70,${0.10*flick})`);
+  counterPool.addColorStop(1,   'rgba(255,170,50,0)');
+  ctx.fillStyle = counterPool;
+  ctx.fillRect(0, cy*PIXEL, canvas.width, 4*PIXEL);
+  // secondary glow upward (bounces off cabinets)
+  ctx.fillStyle = `rgba(255,200,80,${0.06*flick})`;
+  ctx.fillRect(0, (cabY+Math.floor(H*0.14))*PIXEL, canvas.width, (bulbY - cabY - Math.floor(H*0.14))*PIXEL);
 }
 
 function drawLake(W, H) {
@@ -986,13 +1003,44 @@ function drawLake(W, H) {
     ctx.fillRect((gx-1)*PIXEL, gy*PIXEL, PIXEL, PIXEL);
   }
 
-  // === MIST at waterline ===
+  // === MIST at waterline — thicker, more ethereal ===
   for (let x = 0; x < W; x++) {
-    const mist = 0.08 + Math.sin(x*0.3)*0.04 + Math.cos(x*0.17)*0.03;
-    ctx.fillStyle = `rgba(160,210,200,${mist})`;
-    ctx.fillRect(x*PIXEL, (lakeTop-1)*PIXEL, PIXEL, 3*PIXEL);
-    ctx.fillStyle = `rgba(160,210,200,${mist*0.5})`;
-    ctx.fillRect(x*PIXEL, (lakeBot-1)*PIXEL, PIXEL, 2*PIXEL);
+    const mist = 0.12 + Math.sin(x*0.25)*0.06 + Math.cos(x*0.13)*0.04;
+    // upper waterline — thick mist band
+    for (let my = -3; my <= 2; my++) {
+      const mAlpha = mist * (1 - Math.abs(my)/4);
+      ctx.fillStyle = `rgba(180,225,215,${mAlpha})`;
+      ctx.fillRect(x*PIXEL, (lakeTop+my)*PIXEL, PIXEL, PIXEL);
+    }
+    // lower shore mist
+    ctx.fillStyle = `rgba(160,210,200,${mist*0.4})`;
+    ctx.fillRect(x*PIXEL, (lakeBot-1)*PIXEL, PIXEL, 3*PIXEL);
+  }
+
+  // === AURORA wisps — faint green-teal bands in sky (divine/otherworldly) ===
+  for (let band = 0; band < 3; band++) {
+    const baseY = Math.floor(H*(0.08 + band*0.07));
+    const amplitude = 3 + band;
+    for (let x = 0; x < W; x++) {
+      const wave = Math.sin(x*0.12 + band*1.4) * amplitude + Math.cos(x*0.07+band)*2;
+      const ay = baseY + Math.floor(wave);
+      const alpha = (0.05 - band*0.01) * (0.5 + Math.sin(x*0.1+band)*0.5);
+      if (alpha > 0) {
+        ctx.fillStyle = `rgba(120,220,180,${alpha})`;
+        ctx.fillRect(x*PIXEL, ay*PIXEL, PIXEL, 2*PIXEL);
+      }
+    }
+  }
+
+  // === LIGHT PILLARS — vertical shimmer above glowing water ===
+  for (let i = 0; i < 5; i++) {
+    const pillarX = Math.floor(W*0.25 + i*(W*0.12));
+    const pillarH = Math.floor(H*0.04 + Math.random()*H*0.04);
+    for (let py = 0; py < pillarH; py++) {
+      const alpha = (0.06 - py/pillarH*0.06) * (0.5+Math.random()*0.5);
+      ctx.fillStyle = `rgba(150,255,200,${alpha})`;
+      ctx.fillRect(pillarX*PIXEL, (lakeTop - pillarH + py)*PIXEL, (1+Math.floor(Math.random()*2))*PIXEL, PIXEL);
+    }
   }
 }
 
@@ -1735,6 +1783,20 @@ function drawHighway(W, H) {
       }
     }
   }
+  // Rain on windshield / road — diagonal streaks
+  for (let i = 0; i < 30; i++) {
+    const rx = Math.floor(Math.random()*W);
+    const ry = Math.floor(roadTop*0.3 + Math.random()*roadTop*0.65);
+    const rlen = 2 + Math.floor(Math.random()*3);
+    ctx.fillStyle = `rgba(150,160,200,${0.08+Math.random()*0.1})`;
+    ctx.fillRect(rx*PIXEL, ry*PIXEL, PIXEL, rlen*PIXEL);
+  }
+  // Wet road gleam near car
+  ctx.fillStyle = 'rgba(80,80,120,0.08)';
+  for (let y = roadTop+1; y < H; y++) {
+    const t = (y-roadTop)/(H-roadTop);
+    ctx.fillRect(Math.floor(W*0.2)*PIXEL, y*PIXEL, Math.floor(W*0.6)*PIXEL, PIXEL);
+  }
 
   // Road centre dashes — perspective-converging
   for (let y = roadTop + 2; y < H; y += 6) {
@@ -1880,10 +1942,20 @@ animateDeer();
 let flickerFrame = 0;
 function sceneLoop() {
   flickerFrame++;
-  if (flickerFrame % 8 === 0) {
-    if (currentScene === 'kitchen' || currentScene === 'hospital') {
-      drawScene(currentScene);
-    }
+  // kitchen: flickers every 12 frames (window light + fridge)
+  // hospital: fluorescent flicker every 6 frames
+  // lake: shimmer every 20 frames
+  // highway: headlight pulse every 10 frames
+  // hotel: candle flicker every 14 frames
+  const redraw = {
+    kitchen:  flickerFrame % 12 === 0,
+    hospital: flickerFrame % 6  === 0,
+    lake:     flickerFrame % 20 === 0,
+    highway:  flickerFrame % 10 === 0,
+    hotel:    flickerFrame % 14 === 0,
+  };
+  if (currentScene && redraw[currentScene]) {
+    drawScene(currentScene);
   }
   requestAnimationFrame(sceneLoop);
 }
