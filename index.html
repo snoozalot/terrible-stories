@@ -575,24 +575,54 @@ function drawKitchen(W, H) {
   ctx.fillStyle = '#4a3018';
   ctx.fillRect((wx - 1) * PIXEL, (wy + wh) * PIXEL, (ww + 2) * PIXEL, 2 * PIXEL);
 
-  // === CAT on window sill — silhouette against night sky ===
-  const catX = wx + Math.floor(ww / 2) - 3;
-  const catY = wy + wh - 7;
-  ctx.fillStyle = '#0e0a06';
-  // body
-  ctx.fillRect(catX * PIXEL,       (catY + 3) * PIXEL, 5 * PIXEL, 4 * PIXEL);
-  // head
-  ctx.fillRect((catX + 1) * PIXEL,  catY       * PIXEL, 3 * PIXEL, 4 * PIXEL);
-  // ears
-  ctx.fillRect(catX * PIXEL,        (catY - 2)  * PIXEL, 2 * PIXEL, 2 * PIXEL);
-  ctx.fillRect((catX + 3) * PIXEL,  (catY - 2)  * PIXEL, 2 * PIXEL, 2 * PIXEL);
-  // tail curling around
-  ctx.fillRect((catX + 5) * PIXEL,  (catY + 4)  * PIXEL, 3 * PIXEL, PIXEL);
-  ctx.fillRect((catX + 7) * PIXEL,  (catY + 2)  * PIXEL, PIXEL,     3 * PIXEL);
-  // eyes glow amber
-  ctx.fillStyle = '#d4900a';
-  ctx.fillRect((catX + 1) * PIXEL,  (catY + 1)  * PIXEL, PIXEL, PIXEL);
-  ctx.fillRect((catX + 3) * PIXEL,  (catY + 1)  * PIXEL, PIXEL, PIXEL);
+  // === CAT on window sill — proper sitting silhouette ===
+  // Placed just inside the right pane, facing left (toward the room)
+  const catX = wx + Math.floor(ww * 0.58);
+  const catSillY = wy + wh; // sill top
+  // cat sits ON the sill so base of body = sillY
+  // 16-row pixel cat (each unit = 1 PIXEL):
+  // Row offsets from sill upward
+  const C = catX, S = catSillY;
+  ctx.fillStyle = '#0c0806';
+  // ── TAIL: curls out left along sill then up ──
+  ctx.fillRect((C - 4)*PIXEL, (S - 1)*PIXEL, 4*PIXEL, PIXEL); // tail base going left
+  ctx.fillRect((C - 5)*PIXEL, (S - 3)*PIXEL, PIXEL, 2*PIXEL); // tail curves up
+  ctx.fillRect((C - 4)*PIXEL, (S - 4)*PIXEL, PIXEL, PIXEL);   // tail tip
+  // ── BODY: chunky oval, 5 wide 4 tall ──
+  ctx.fillRect((C - 1)*PIXEL, (S - 5)*PIXEL, 5*PIXEL, PIXEL); // body top
+  ctx.fillRect((C - 2)*PIXEL, (S - 4)*PIXEL, 7*PIXEL, PIXEL);
+  ctx.fillRect((C - 2)*PIXEL, (S - 3)*PIXEL, 7*PIXEL, PIXEL);
+  ctx.fillRect((C - 1)*PIXEL, (S - 2)*PIXEL, 5*PIXEL, PIXEL); // body bottom
+  // ── FRONT PAWS on sill ──
+  ctx.fillRect((C - 1)*PIXEL, (S - 1)*PIXEL, 2*PIXEL, PIXEL);
+  ctx.fillRect((C + 2)*PIXEL, (S - 1)*PIXEL, 2*PIXEL, PIXEL);
+  // ── NECK ──
+  ctx.fillRect(C*PIXEL,       (S - 7)*PIXEL, 3*PIXEL, 2*PIXEL);
+  // ── HEAD: 4 wide 3 tall ──
+  ctx.fillRect((C - 1)*PIXEL, (S - 10)*PIXEL, 5*PIXEL, PIXEL); // head top
+  ctx.fillRect((C - 1)*PIXEL, (S -  9)*PIXEL, 5*PIXEL, PIXEL);
+  ctx.fillRect((C - 1)*PIXEL, (S -  8)*PIXEL, 5*PIXEL, PIXEL); // chin
+  // ── EARS: two sharp triangles ──
+  ctx.fillRect((C - 1)*PIXEL, (S - 12)*PIXEL, 2*PIXEL, 2*PIXEL); // left ear
+  ctx.fillRect((C + 3)*PIXEL, (S - 12)*PIXEL, 2*PIXEL, 2*PIXEL); // right ear
+  ctx.fillRect(C*PIXEL,       (S - 13)*PIXEL, PIXEL,   PIXEL);   // left ear tip
+  ctx.fillRect((C + 4)*PIXEL, (S - 13)*PIXEL, PIXEL,   PIXEL);   // right ear tip
+  // ── FACE: nose + eyes glow ──
+  // eyes — bright amber slits
+  ctx.fillStyle = '#e8a020';
+  ctx.fillRect(C*PIXEL,       (S - 9)*PIXEL, PIXEL, PIXEL); // left eye
+  ctx.fillRect((C + 3)*PIXEL, (S - 9)*PIXEL, PIXEL, PIXEL); // right eye
+  // eye glow
+  ctx.fillStyle = 'rgba(232,160,32,0.3)';
+  ctx.fillRect((C - 1)*PIXEL, (S - 10)*PIXEL, 3*PIXEL, 3*PIXEL);
+  ctx.fillRect((C + 2)*PIXEL, (S - 10)*PIXEL, 3*PIXEL, 3*PIXEL);
+  // nose
+  ctx.fillStyle = '#5a2818';
+  ctx.fillRect((C + 1)*PIXEL, (S - 8)*PIXEL, 2*PIXEL, PIXEL);
+  // whiskers — thin lines using 1px fills
+  ctx.fillStyle = 'rgba(180,160,120,0.4)';
+  ctx.fillRect((C - 3)*PIXEL, (S - 8)*PIXEL, 3*PIXEL, PIXEL); // left whiskers
+  ctx.fillRect((C + 4)*PIXEL, (S - 8)*PIXEL, 3*PIXEL, PIXEL); // right whiskers
 
   // === OPEN FRIDGE — far left, yellow light spilling out ===
   const frx = Math.floor(W * 0.02), fry = Math.floor(H * 0.30);
@@ -967,341 +997,376 @@ function drawLake(W, H) {
 }
 
 function drawHotel(W, H) {
-  const floorY = Math.floor(H * 0.76);
+  const floorY = Math.floor(H * 0.80);
 
-  // === WALLS — rich warm dark brown, lighter centre from chandelier ===
-  for (let y = 0; y < floorY; y++) {
-    const t = y / floorY;
-    const r = Math.floor(24 + t * 18);
-    const g = Math.floor(17 + t * 12);
-    const b = Math.floor(14 + t * 9);
+  // === CEILING — deep #780000 crimson ===
+  for (let y = 0; y < Math.floor(H * 0.09); y++) {
+    const t = y / (H * 0.09);
+    const r = Math.floor(0x78 - t*10);
+    ctx.fillStyle = `rgb(${r},${Math.floor(t*2)},${Math.floor(t*2)})`;
+    ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
+  }
+
+  // === WALLS — #780000 burgundy fading darker toward floor ===
+  for (let y = Math.floor(H * 0.09); y < floorY; y++) {
+    const t = (y - H*0.09) / (floorY - H*0.09);
+    const r = Math.floor(0x78 - t*28);
+    const g = Math.floor(t*3);
+    const b = Math.floor(t*5);
     ctx.fillStyle = `rgb(${r},${g},${b})`;
     ctx.fillRect(0, y * PIXEL, canvas.width, PIXEL);
   }
 
-  // === DIAMOND WALLPAPER — elegant, visible ===
-  const dSize = 5;
-  for (let y = 1; y < floorY-1; y++) {
-    for (let x = 0; x < W; x++) {
-      const dx = ((x % (dSize*2)) + dSize*2) % (dSize*2);
-      const dy = ((y % (dSize*2)) + dSize*2) % (dSize*2);
-      const dist = Math.abs(dx - dSize) + Math.abs(dy - dSize);
-      if (dist === dSize) {
-        ctx.fillStyle = 'rgba(110,75,45,0.28)';
-        ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
-      } else if (dist === dSize - 1) {
-        ctx.fillStyle = 'rgba(95,65,38,0.1)';
-        ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
-      }
-    }
-  }
+  // === GOLD CORNICE ===
+  ctx.fillStyle = '#c0942c';
+  ctx.fillRect(0, Math.floor(H*0.09)*PIXEL, canvas.width, PIXEL);
+  ctx.fillStyle = '#8a6820';
+  ctx.fillRect(0, (Math.floor(H*0.09)+1)*PIXEL, canvas.width, PIXEL);
 
-  // === WAINSCOTING — lower wall panel ===
-  const wainY = Math.floor(floorY * 0.72);
-  ctx.fillStyle = '#2e1e0c';
-  ctx.fillRect(0, wainY*PIXEL, canvas.width, (floorY-wainY)*PIXEL);
-  // wainscot top rail
-  ctx.fillStyle = '#5a3a18';
-  ctx.fillRect(0, wainY*PIXEL, canvas.width, 2*PIXEL);
-  ctx.fillStyle = '#7a5028';
-  ctx.fillRect(0, wainY*PIXEL, canvas.width, PIXEL);
-  // wainscot panels
-  for (let x = 2; x < W; x += 14) {
-    ctx.fillStyle = '#261608';
-    ctx.fillRect(x*PIXEL, (wainY+3)*PIXEL, 12*PIXEL, (floorY-wainY-5)*PIXEL);
-    ctx.fillStyle = '#3a2410';
-    ctx.fillRect(x*PIXEL, (wainY+3)*PIXEL, 12*PIXEL, PIXEL);
-    ctx.fillRect(x*PIXEL, (wainY+3)*PIXEL, PIXEL, (floorY-wainY-5)*PIXEL);
-  }
-
-  // === FLOOR — rich parquet dark wood ===
+  // === FLOOR — #669bbc blue-steel ===
   for (let x = 0; x < W; x++) {
     for (let y = floorY; y < H; y++) {
-      const plank = Math.floor(x/3) % 3;
-      const c = plank === 0 ? 16 : plank === 1 ? 20 : 14;
-      ctx.fillStyle = `rgb(${c+4},${c},${Math.floor(c*0.5)})`;
+      // subtle herringbone variation
+      const diag = (Math.floor(x*0.8) + Math.floor(y*0.8)) % 4;
+      const base = diag < 2 ? [0x66, 0x9b, 0xbc] : [0x58, 0x88, 0xa8];
+      ctx.fillStyle = `rgb(${base[0]},${base[1]},${base[2]})`;
       ctx.fillRect(x*PIXEL, y*PIXEL, PIXEL, PIXEL);
     }
   }
-  // floor plank lines
-  ctx.fillStyle = 'rgba(8,5,2,0.5)';
-  for (let x = 6; x < W; x += 6) {
-    ctx.fillRect(x*PIXEL, floorY*PIXEL, PIXEL, (H-floorY)*PIXEL);
-  }
-  ctx.fillStyle = '#3a2010';
+  ctx.fillStyle = '#4a7a98';
   ctx.fillRect(0, floorY*PIXEL, canvas.width, PIXEL);
 
-  // === CHANDELIER ===
-  const cx = Math.floor(W/2), chandY = 3;
-  // large warm glow pool on ceiling
-  const cGrd = ctx.createRadialGradient(cx*PIXEL, 0, 0, cx*PIXEL, chandY*PIXEL, 32*PIXEL);
-  cGrd.addColorStop(0, 'rgba(255,210,110,0.38)');
-  cGrd.addColorStop(0.4,'rgba(255,185,70,0.18)');
-  cGrd.addColorStop(1, 'rgba(255,160,50,0)');
-  ctx.fillStyle = cGrd;
-  ctx.fillRect((cx-32)*PIXEL, 0, 64*PIXEL, 28*PIXEL);
+  // === CURTAINS — drawn FIRST so window goes on top ===
+  // Left curtain panel
+  const curtainW = Math.floor(W * 0.14);
+  ctx.fillStyle = '#3d0010';
+  ctx.fillRect(0, Math.floor(H*0.09)*PIXEL, curtainW*PIXEL, (floorY - Math.floor(H*0.09))*PIXEL);
+  // curtain folds
+  for (let f = 0; f < 5; f++) {
+    ctx.fillStyle = f%2===0 ? 'rgba(80,0,20,0.5)' : 'rgba(20,0,5,0.4)';
+    ctx.fillRect((f*Math.floor(curtainW/5))*PIXEL, Math.floor(H*0.09)*PIXEL, Math.floor(curtainW/6)*PIXEL, (floorY-Math.floor(H*0.09))*PIXEL);
+  }
+  ctx.fillStyle = '#5a0018';
+  ctx.fillRect(0, Math.floor(H*0.09)*PIXEL, PIXEL, (floorY-Math.floor(H*0.09))*PIXEL);
 
-  // ceiling rose
-  ctx.fillStyle = '#7a6040';
-  ctx.fillRect((cx-2)*PIXEL, 0, 4*PIXEL, 2*PIXEL);
-  // chain
-  ctx.fillStyle = '#8a6828';
-  ctx.fillRect((cx)*PIXEL, 0, PIXEL, chandY*PIXEL);
-  // main cross bar
-  ctx.fillStyle = '#a07830';
-  ctx.fillRect((cx-10)*PIXEL, chandY*PIXEL,     21*PIXEL, 2*PIXEL);
-  ctx.fillRect((cx-8)*PIXEL,  (chandY+2)*PIXEL, 17*PIXEL, PIXEL);
-  // arms
-  for (const off of [-9, -5, -1, 3, 7]) {
-    ctx.fillStyle = '#a07830';
-    ctx.fillRect((cx+off)*PIXEL, (chandY+2)*PIXEL, PIXEL, 3*PIXEL);
-    // drip cup
-    ctx.fillStyle = '#8a6028';
-    ctx.fillRect((cx+off-1)*PIXEL, (chandY+5)*PIXEL, 3*PIXEL, PIXEL);
-    // candle
-    ctx.fillStyle = '#e8d4a0';
-    ctx.fillRect((cx+off)*PIXEL, (chandY+4)*PIXEL, PIXEL, 3*PIXEL);
-    // flame — layered
-    ctx.fillStyle = '#fff8a0';
-    ctx.fillRect((cx+off)*PIXEL, (chandY+3)*PIXEL, PIXEL, PIXEL);
-    ctx.fillStyle = '#ffe050';
-    ctx.fillRect((cx+off)*PIXEL, (chandY+2)*PIXEL, PIXEL, PIXEL);
-    // soft per-flame glow
-    ctx.fillStyle = 'rgba(255,225,90,0.18)';
-    ctx.fillRect((cx+off-2)*PIXEL, (chandY)*PIXEL, 5*PIXEL, 6*PIXEL);
+  // Right curtain panel
+  const rightCurtX = Math.floor(W * 0.86);
+  ctx.fillStyle = '#3d0010';
+  ctx.fillRect(rightCurtX*PIXEL, Math.floor(H*0.09)*PIXEL, (W-rightCurtX)*PIXEL, (floorY-Math.floor(H*0.09))*PIXEL);
+  for (let f = 0; f < 5; f++) {
+    ctx.fillStyle = f%2===0 ? 'rgba(80,0,20,0.5)' : 'rgba(20,0,5,0.4)';
+    ctx.fillRect((rightCurtX + f*Math.floor((W-rightCurtX)/5))*PIXEL, Math.floor(H*0.09)*PIXEL, Math.floor((W-rightCurtX)/6)*PIXEL, (floorY-Math.floor(H*0.09))*PIXEL);
+  }
+  ctx.fillStyle = '#5a0018';
+  ctx.fillRect((W-1)*PIXEL, Math.floor(H*0.09)*PIXEL, PIXEL, (floorY-Math.floor(H*0.09))*PIXEL);
+
+  // Curtain rod
+  ctx.fillStyle = '#c09030';
+  ctx.fillRect(0, (Math.floor(H*0.09)-1)*PIXEL, canvas.width, 2*PIXEL);
+  ctx.fillStyle = '#e0b040';
+  ctx.fillRect(0, (Math.floor(H*0.09)-2)*PIXEL, canvas.width, PIXEL);
+
+  // === MASSIVE WINDOW — full between curtains, floor to near-ceiling ===
+  const wwx = curtainW;
+  const wwy = Math.floor(H * 0.09);
+  const www = rightCurtX - curtainW;
+  const wwh = floorY - wwy;
+
+  // ── SUNSET SKY — drawn pixel row by row inside window ──
+  for (let y = wwy; y < wwy + wwh; y++) {
+    const t = (y - wwy) / wwh;
+    let r, g, b;
+    if (t < 0.15) {
+      // deep midnight blue at top
+      const s = t/0.15;
+      r = Math.floor(5  + s*15);  g = Math.floor(5  + s*15);  b = Math.floor(30 + s*50);
+    } else if (t < 0.38) {
+      // indigo-violet band
+      const s = (t-0.15)/0.23;
+      r = Math.floor(20  + s*90);  g = Math.floor(20  + s*25);  b = Math.floor(80  + s*55);
+    } else if (t < 0.55) {
+      // violet to magenta-pink horizon glow
+      const s = (t-0.38)/0.17;
+      r = Math.floor(110 + s*130); g = Math.floor(45  + s*45);  b = Math.floor(135 - s*70);
+    } else if (t < 0.66) {
+      // burning orange sunset band
+      const s = (t-0.55)/0.11;
+      r = Math.floor(240 + s*10);  g = Math.floor(90  + s*60);  b = Math.floor(65  - s*40);
+    } else if (t < 0.75) {
+      // low warm glow just above city
+      const s = (t-0.66)/0.09;
+      r = Math.floor(250 - s*30);  g = Math.floor(150 - s*30);  b = Math.floor(25  - s*5);
+    } else {
+      // dark water below
+      const s = (t-0.75)/0.25;
+      r = Math.floor(220 - s*180); g = Math.floor(120 - s*95);  b = Math.floor(20  + s*35);
+    }
+    ctx.fillStyle = `rgb(${Math.min(255,r)},${Math.min(255,g)},${Math.min(255,b)})`;
+    ctx.fillRect(wwx*PIXEL, y*PIXEL, www*PIXEL, PIXEL);
   }
 
-  // === WALL SCONCES — left and right ===
-  function drawSconce(sx, sy) {
-    // large soft glow
-    const sg = ctx.createRadialGradient(sx*PIXEL, (sy-2)*PIXEL, 0, sx*PIXEL, (sy-2)*PIXEL, 13*PIXEL);
-    sg.addColorStop(0, 'rgba(255,195,80,0.32)');
-    sg.addColorStop(0.5,'rgba(255,165,50,0.14)');
-    sg.addColorStop(1, 'rgba(255,140,30,0)');
-    ctx.fillStyle = sg;
-    ctx.fillRect((sx-13)*PIXEL, (sy-12)*PIXEL, 26*PIXEL, 20*PIXEL);
-    // back plate
-    ctx.fillStyle = '#6a4820';
-    ctx.fillRect((sx-2)*PIXEL, sy*PIXEL, 4*PIXEL, 4*PIXEL);
-    // arm
-    ctx.fillRect((sx-3)*PIXEL, (sy+1)*PIXEL, 6*PIXEL, 2*PIXEL);
-    // bobeche (drip plate)
-    ctx.fillStyle = '#8a6030';
-    ctx.fillRect((sx-2)*PIXEL, (sy-1)*PIXEL, 5*PIXEL, PIXEL);
-    // candles
-    for (let i = -1; i <= 1; i++) {
-      ctx.fillStyle = '#e8d490';
-      ctx.fillRect((sx+i)*PIXEL, (sy-4)*PIXEL, PIXEL, 3*PIXEL);
-      ctx.fillStyle = '#fff090';
-      ctx.fillRect((sx+i)*PIXEL, (sy-5)*PIXEL, PIXEL, PIXEL);
-      ctx.fillStyle = '#ffd840';
-      ctx.fillRect((sx+i)*PIXEL, (sy-6)*PIXEL, PIXEL, PIXEL);
+  // ── STARS ──
+  for (let i = 0; i < 40; i++) {
+    const sx = wwx + Math.floor(Math.random()*www);
+    const sy = wwy + Math.floor(Math.random()*Math.floor(wwh*0.28));
+    const br = 0.3 + Math.random()*0.65;
+    ctx.fillStyle = `rgba(220,225,255,${br})`;
+    ctx.fillRect(sx*PIXEL, sy*PIXEL, PIXEL, PIXEL);
+    if (br > 0.8) {
+      ctx.fillStyle = `rgba(200,210,255,0.3)`;
+      ctx.fillRect((sx-1)*PIXEL, sy*PIXEL, PIXEL, PIXEL);
+      ctx.fillRect((sx+1)*PIXEL, sy*PIXEL, PIXEL, PIXEL);
     }
   }
-  drawSconce(Math.floor(W*0.08), Math.floor(H*0.3));
-  drawSconce(Math.floor(W*0.92), Math.floor(H*0.3));
 
-  // === TALL ARCHED DOORWAY / WINDOW — back wall ===
-  const awx = Math.floor(W*0.38), awy = Math.floor(H*0.04);
-  const aww = Math.floor(W*0.24), awh = Math.floor(H*0.42);
-  const archR = Math.floor(aww / 2);
-
-  // warm light behind (like the reference — golden exterior light)
-  const archGlow = ctx.createRadialGradient(
-    (awx+aww/2)*PIXEL, (awy+archR)*PIXEL, 0,
-    (awx+aww/2)*PIXEL, (awy+archR)*PIXEL, aww*PIXEL
+  // ── HORIZON GLOW ──
+  const horizonY = wwy + Math.floor(wwh * 0.68);
+  const hGlow = ctx.createRadialGradient(
+    (wwx + www/2)*PIXEL, horizonY*PIXEL, 0,
+    (wwx + www/2)*PIXEL, horizonY*PIXEL, www*0.55*PIXEL
   );
-  archGlow.addColorStop(0,'rgba(255,230,140,0.55)');
-  archGlow.addColorStop(0.4,'rgba(255,200,80,0.25)');
-  archGlow.addColorStop(1,'rgba(255,170,50,0)');
-  ctx.fillStyle = archGlow;
-  ctx.fillRect((awx-10)*PIXEL, 0, (aww+20)*PIXEL, (awh+10)*PIXEL);
+  hGlow.addColorStop(0, 'rgba(255,160,40,0.3)');
+  hGlow.addColorStop(1, 'rgba(255,100,20,0)');
+  ctx.fillStyle = hGlow;
+  ctx.fillRect(wwx*PIXEL, (horizonY-8)*PIXEL, www*PIXEL, 16*PIXEL);
 
-  // arch frame — dark ornate
-  ctx.fillStyle = '#2a1a08';
-  ctx.fillRect(awx*PIXEL, (awy+archR)*PIXEL, aww*PIXEL, (awh-archR)*PIXEL);
-  // arch top (semicircle)
-  for (let dy = -archR; dy <= 0; dy++) {
-    const hw = Math.floor(Math.sqrt(Math.max(0, archR*archR - dy*dy)));
-    ctx.fillRect((awx+archR-hw)*PIXEL, (awy+archR+dy)*PIXEL, hw*2*PIXEL, PIXEL);
+  // ── CITY SILHOUETTE ──
+  for (let x = 0; x < www; x++) {
+    const bh = Math.floor(4 + Math.abs(Math.sin(x*0.28+0.7)*8) + Math.abs(Math.cos(x*0.15+0.3)*5));
+    ctx.fillStyle = '#060408';
+    ctx.fillRect((wwx+x)*PIXEL, (horizonY-bh)*PIXEL, PIXEL, bh*PIXEL);
   }
 
-  // arch interior glow fill
-  ctx.fillStyle = '#f8e0a0';
-  ctx.fillRect((awx+2)*PIXEL, (awy+archR)*PIXEL, (aww-4)*PIXEL, (awh-archR-2)*PIXEL);
-  for (let dy = -archR+2; dy <= 0; dy++) {
-    const hw = Math.floor(Math.sqrt(Math.max(0, (archR-2)*(archR-2) - dy*dy)));
-    if (hw > 0) ctx.fillRect((awx+archR-hw)*PIXEL, (awy+archR+dy)*PIXEL, hw*2*PIXEL, PIXEL);
+  // ── LIT WINDOWS in buildings — dense and twinkling ──
+  for (let i = 0; i < 120; i++) {
+    const wx2 = wwx + Math.floor(Math.random()*www);
+    const buildingTop = horizonY - Math.floor(4 + Math.abs(Math.sin(wx2*0.28+0.7)*8) + Math.abs(Math.cos(wx2*0.15+0.3)*5));
+    if (buildingTop >= horizonY) continue;
+    const wy2 = buildingTop + Math.floor(Math.random()*(horizonY - buildingTop - 1));
+    const warm = Math.random() < 0.55;
+    ctx.fillStyle = warm ? '#ffe890' : '#90c8ff';
+    ctx.fillRect(wx2*PIXEL, wy2*PIXEL, PIXEL, PIXEL);
   }
-  // interior gradient — brighter top
-  const intGrd2 = ctx.createLinearGradient(0, awy*PIXEL, 0, (awy+awh)*PIXEL);
-  intGrd2.addColorStop(0,'rgba(255,245,190,0.7)');
-  intGrd2.addColorStop(1,'rgba(255,200,100,0.3)');
-  ctx.fillStyle = intGrd2;
-  ctx.fillRect((awx+2)*PIXEL, (awy+archR)*PIXEL, (aww-4)*PIXEL, (awh-archR-2)*PIXEL);
 
-  // outer arch columns / pilasters
-  ctx.fillStyle = '#4a3018';
-  ctx.fillRect((awx-3)*PIXEL, (awy+archR-2)*PIXEL, 3*PIXEL, (awh-archR+2)*PIXEL);
-  ctx.fillRect((awx+aww)*PIXEL, (awy+archR-2)*PIXEL, 3*PIXEL, (awh-archR+2)*PIXEL);
-  // column capital detail
-  ctx.fillStyle = '#6a4828';
-  ctx.fillRect((awx-4)*PIXEL, (awy+archR-2)*PIXEL, 5*PIXEL, 2*PIXEL);
-  ctx.fillRect((awx+aww-1)*PIXEL, (awy+archR-2)*PIXEL, 5*PIXEL, 2*PIXEL);
-
-  // silhouette of plant/urn in doorway base
-  ctx.fillStyle = '#3a2810';
-  const urnX = awx + Math.floor(aww*0.1), urnY = awy+awh-6;
-  ctx.fillRect(urnX*PIXEL, urnY*PIXEL, 4*PIXEL, 6*PIXEL);
-  ctx.fillRect((urnX-1)*PIXEL, (urnY+4)*PIXEL, 6*PIXEL, 2*PIXEL);
-  // plant leaves
-  ctx.fillStyle = '#284820';
-  ctx.fillRect((urnX-1)*PIXEL, (urnY-4)*PIXEL, PIXEL, 4*PIXEL);
-  ctx.fillRect(urnX*PIXEL,     (urnY-6)*PIXEL, PIXEL, 6*PIXEL);
-  ctx.fillRect((urnX+2)*PIXEL, (urnY-5)*PIXEL, PIXEL, 5*PIXEL);
-  ctx.fillRect((urnX+3)*PIXEL, (urnY-3)*PIXEL, PIXEL, 3*PIXEL);
-
-  // === FRAMED PAINTING — right of arch ===
-  const fpx = Math.floor(W*0.68), fpy = Math.floor(H*0.1);
-  const fpw = Math.floor(W*0.22), fph = Math.floor(H*0.28);
-  // drop shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.fillRect((fpx+2)*PIXEL,(fpy+2)*PIXEL,fpw*PIXEL,fph*PIXEL);
-  // ornate frame — gold border then dark
-  ctx.fillStyle = '#7a5820';
-  ctx.fillRect(fpx*PIXEL,fpy*PIXEL,fpw*PIXEL,fph*PIXEL);
-  ctx.fillStyle = '#4a2e0c';
-  ctx.fillRect((fpx+2)*PIXEL,(fpy+2)*PIXEL,(fpw-4)*PIXEL,(fph-4)*PIXEL);
-  // painting scene inside — warm reddish interior
-  ctx.fillStyle = '#2e1c10';
-  ctx.fillRect((fpx+3)*PIXEL,(fpy+3)*PIXEL,(fpw-6)*PIXEL,(fph-6)*PIXEL);
-  // painted scene shapes — draped figure suggestion
-  ctx.fillStyle = '#c0a888';
-  ctx.fillRect((fpx+4)*PIXEL,(fpy+fph-10)*PIXEL,(fpw-8)*PIXEL,2*PIXEL);
-  ctx.fillStyle = '#e0d0b8';
-  ctx.fillRect((fpx+5)*PIXEL,(fpy+fph-11)*PIXEL,(fpw-10)*PIXEL,PIXEL);
-  ctx.fillStyle = '#403828';
-  ctx.fillRect((fpx+4)*PIXEL,(fpy+4)*PIXEL,2*PIXEL,(fph-13)*PIXEL);
-  ctx.fillRect((fpx+fpw-7)*PIXEL,(fpy+5)*PIXEL,2*PIXEL,(fph-14)*PIXEL);
-  // warm tone mid area
-  ctx.fillStyle = 'rgba(160,100,50,0.25)';
-  ctx.fillRect((fpx+4)*PIXEL,(fpy+3)*PIXEL,(fpw-8)*PIXEL,Math.floor(fph*0.5)*PIXEL);
-  // frame gold corners
-  ctx.fillStyle = '#c0901c';
-  ctx.fillRect(fpx*PIXEL,fpy*PIXEL,fpw*PIXEL,PIXEL);
-  ctx.fillRect(fpx*PIXEL,fpy*PIXEL,PIXEL,fph*PIXEL);
-  ctx.fillStyle = '#a07018';
-  ctx.fillRect(fpx*PIXEL,(fpy+fph-1)*PIXEL,fpw*PIXEL,PIXEL);
-  ctx.fillRect((fpx+fpw-1)*PIXEL,fpy*PIXEL,PIXEL,fph*PIXEL);
-
-  // === BED — ornate dark ===
-  const bx = Math.floor(W*0.26), bw = Math.floor(W*0.48);
-  const headY = Math.floor(H*0.52), headH = Math.floor(H*0.2);
-  // shadow under bed
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.fillRect((bx-2)*PIXEL,(headY+headH+4)*PIXEL,(bw+4)*PIXEL,4*PIXEL);
-  // posts
-  ctx.fillStyle = '#100a04';
-  ctx.fillRect(bx*PIXEL,(headY-4)*PIXEL,3*PIXEL,(headH+4)*PIXEL);
-  ctx.fillRect((bx+bw-3)*PIXEL,(headY-4)*PIXEL,3*PIXEL,(headH+4)*PIXEL);
-  // post finials
-  ctx.fillStyle = '#3a2412';
-  ctx.fillRect((bx-1)*PIXEL,(headY-6)*PIXEL,5*PIXEL,2*PIXEL);
-  ctx.fillRect((bx+bw-4)*PIXEL,(headY-6)*PIXEL,5*PIXEL,2*PIXEL);
-  ctx.fillStyle = '#5a3a1c';
-  ctx.fillRect(bx*PIXEL,(headY-7)*PIXEL,3*PIXEL,PIXEL);
-  ctx.fillRect((bx+bw-3)*PIXEL,(headY-7)*PIXEL,3*PIXEL,PIXEL);
-  // headboard fill
-  ctx.fillStyle = '#160e06';
-  ctx.fillRect((bx+3)*PIXEL,headY*PIXEL,(bw-6)*PIXEL,headH*PIXEL);
-  // headboard arch
-  ctx.fillStyle = '#201408';
-  const archCx2 = Math.floor(bx+bw/2);
-  for (let i=-Math.floor(bw*0.2); i<=Math.floor(bw*0.2); i++) {
-    const ah = Math.floor(Math.sqrt(Math.max(0,Math.pow(bw*0.2,2)-i*i))*0.32);
-    if(ah>0) ctx.fillRect((archCx2+i)*PIXEL,(headY+2)*PIXEL,PIXEL,ah*PIXEL);
+  // ── WATER — dark reflective below city ──
+  for (let y = horizonY; y < wwy + wwh; y++) {
+    const t = (y-horizonY)/(wwy+wwh-horizonY);
+    ctx.fillStyle = `rgb(${Math.floor(15-t*8)},${Math.floor(18+t*5)},${Math.floor(32+t*18)})`;
+    ctx.fillRect(wwx*PIXEL, y*PIXEL, www*PIXEL, PIXEL);
   }
-  // panel verticals
-  ctx.fillStyle = '#0e0804';
-  ctx.fillRect((bx+5)*PIXEL,(headY+1)*PIXEL,PIXEL,(headH-2)*PIXEL);
-  ctx.fillRect((bx+bw-6)*PIXEL,(headY+1)*PIXEL,PIXEL,(headH-2)*PIXEL);
-  // headboard highlight
-  ctx.fillStyle = '#3a2210';
-  ctx.fillRect((bx+3)*PIXEL,headY*PIXEL,(bw-6)*PIXEL,PIXEL);
-  ctx.fillRect((bx+3)*PIXEL,headY*PIXEL,PIXEL,headH*PIXEL);
+
+  // ── WATER REFLECTIONS of city lights ──
+  for (let i = 0; i < 60; i++) {
+    const rx = wwx + Math.floor(Math.random()*www);
+    const ry = horizonY + 1 + Math.floor(Math.random()*(wwy+wwh-horizonY-2));
+    const warm = Math.random() < 0.55;
+    const alpha = 0.2 + Math.random()*0.35;
+    ctx.fillStyle = warm ? `rgba(255,220,100,${alpha})` : `rgba(100,170,255,${alpha})`;
+    ctx.fillRect(rx*PIXEL, ry*PIXEL, (1+Math.floor(Math.random()*3))*PIXEL, PIXEL);
+  }
+
+  // ── WINDOW FRAME on top — thin dark bars ──
+  ctx.fillStyle = '#1a1008';
+  // outer frame edges
+  ctx.fillRect(wwx*PIXEL, wwy*PIXEL, 2*PIXEL, wwh*PIXEL);
+  ctx.fillRect((wwx+www-2)*PIXEL, wwy*PIXEL, 2*PIXEL, wwh*PIXEL);
+  ctx.fillRect(wwx*PIXEL, wwy*PIXEL, www*PIXEL, 2*PIXEL);
+  ctx.fillRect(wwx*PIXEL, (wwy+wwh-2)*PIXEL, www*PIXEL, 2*PIXEL);
+  // two vertical mullions
+  const third = Math.floor(www/3);
+  ctx.fillRect((wwx+third)*PIXEL,   wwy*PIXEL, 2*PIXEL, wwh*PIXEL);
+  ctx.fillRect((wwx+third*2)*PIXEL, wwy*PIXEL, 2*PIXEL, wwh*PIXEL);
+  // one horizontal transom
+  ctx.fillRect(wwx*PIXEL, (wwy+Math.floor(wwh*0.48))*PIXEL, www*PIXEL, 2*PIXEL);
+  // frame highlight
+  ctx.fillStyle = '#2e1c0c';
+  ctx.fillRect(wwx*PIXEL, wwy*PIXEL, PIXEL, wwh*PIXEL);
+
+  // === WALL SCONCE — right wall ===
+  const scx = Math.floor(W*0.93), scy = Math.floor(H*0.32);
+  const sg2 = ctx.createRadialGradient(scx*PIXEL,scy*PIXEL,0,scx*PIXEL,scy*PIXEL,13*PIXEL);
+  sg2.addColorStop(0,'rgba(255,200,90,0.38)');
+  sg2.addColorStop(1,'rgba(255,140,30,0)');
+  ctx.fillStyle = sg2;
+  ctx.fillRect((scx-13)*PIXEL,(scy-11)*PIXEL,26*PIXEL,22*PIXEL);
+  ctx.fillStyle = '#5a3a18';
+  ctx.fillRect((scx-1)*PIXEL,scy*PIXEL,3*PIXEL,4*PIXEL);
+  ctx.fillRect((scx-2)*PIXEL,(scy+1)*PIXEL,5*PIXEL,PIXEL);
+  for (let i=-1; i<=1; i++) {
+    ctx.fillStyle='#d8b860'; ctx.fillRect((scx+i)*PIXEL,(scy-3)*PIXEL,PIXEL,3*PIXEL);
+    ctx.fillStyle='#fff080'; ctx.fillRect((scx+i)*PIXEL,(scy-5)*PIXEL,PIXEL,2*PIXEL);
+  }
+
+  // === BED — low modern platform ===
+  const bx = Math.floor(W*0.38), bw = Math.floor(W*0.46);
+  const headY = Math.floor(H*0.47), headH = Math.floor(H*0.26);
+
+  // headboard — pale upholstered
+  ctx.fillStyle = '#c0b0a0';
+  ctx.fillRect(bx*PIXEL, headY*PIXEL, bw*PIXEL, headH*PIXEL);
+  // tufting grid
+  ctx.fillStyle = '#a89888';
+  for (let i=1; i<5; i++) ctx.fillRect((bx+Math.floor(bw*i/5))*PIXEL, headY*PIXEL, PIXEL, headH*PIXEL);
+  for (let j=1; j<3; j++) ctx.fillRect(bx*PIXEL, (headY+Math.floor(headH*j/3))*PIXEL, bw*PIXEL, PIXEL);
+  ctx.fillStyle = '#d8cfc0';
+  ctx.fillRect(bx*PIXEL, headY*PIXEL, bw*PIXEL, PIXEL);
+  ctx.fillStyle = '#887868';
+  ctx.fillRect(bx*PIXEL, (headY+headH-1)*PIXEL, bw*PIXEL, PIXEL);
 
   const mattY = headY + headH;
-  // mattress — warm ivory
-  ctx.fillStyle = '#d0c8b4';
-  ctx.fillRect((bx+2)*PIXEL,mattY*PIXEL,(bw-4)*PIXEL,5*PIXEL);
-  ctx.fillStyle = '#e0d8c4';
-  ctx.fillRect((bx+2)*PIXEL,mattY*PIXEL,(bw-4)*PIXEL,PIXEL);
+  // platform base
+  ctx.fillStyle = '#3d0010';
+  ctx.fillRect((bx-2)*PIXEL, mattY*PIXEL, (bw+4)*PIXEL, 5*PIXEL);
+  // mattress — white
+  ctx.fillStyle = '#f0ece4';
+  ctx.fillRect(bx*PIXEL, mattY*PIXEL, bw*PIXEL, 5*PIXEL);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(bx*PIXEL, mattY*PIXEL, bw*PIXEL, PIXEL);
+  // gold throw
+  ctx.fillStyle = '#b8943a';
+  ctx.fillRect((bx+Math.floor(bw*0.1))*PIXEL, (mattY+2)*PIXEL, Math.floor(bw*0.8)*PIXEL, 4*PIXEL);
+  ctx.fillStyle = '#c8a840';
+  ctx.fillRect((bx+Math.floor(bw*0.1))*PIXEL, (mattY+2)*PIXEL, Math.floor(bw*0.8)*PIXEL, PIXEL);
   // pillows
-  ctx.fillStyle = '#e8e0ce';
-  ctx.fillRect((bx+4)*PIXEL,mattY*PIXEL,Math.floor(bw*0.2)*PIXEL,3*PIXEL);
-  ctx.fillRect((bx+bw-4-Math.floor(bw*0.2))*PIXEL,mattY*PIXEL,Math.floor(bw*0.2)*PIXEL,3*PIXEL);
-  ctx.fillStyle = '#f0e8d8'; // pillow highlight
-  ctx.fillRect((bx+4)*PIXEL,mattY*PIXEL,Math.floor(bw*0.2)*PIXEL,PIXEL);
-  ctx.fillRect((bx+bw-4-Math.floor(bw*0.2))*PIXEL,mattY*PIXEL,Math.floor(bw*0.2)*PIXEL,PIXEL);
-  // dark luxe blanket
-  ctx.fillStyle = '#1e1409';
-  ctx.fillRect((bx+2)*PIXEL,(mattY+2)*PIXEL,(bw-4)*PIXEL,6*PIXEL);
-  ctx.fillStyle = '#2a1c0e'; // blanket fold highlights
-  for (let i=4; i<bw-4; i+=7) {
-    ctx.fillRect((bx+i)*PIXEL,(mattY+3)*PIXEL,2*PIXEL,2*PIXEL);
-  }
-  ctx.fillStyle = '#0e0a04';
-  ctx.fillRect((bx+2)*PIXEL,(mattY+7)*PIXEL,(bw-4)*PIXEL,PIXEL);
-  // turned-down corner
-  ctx.fillStyle = '#c8c0b0';
-  ctx.fillRect((bx+bw-14)*PIXEL,(mattY+2)*PIXEL,8*PIXEL,3*PIXEL);
+  const pw2 = Math.floor(bw*0.22);
+  ctx.fillStyle = '#f8f4ec';
+  ctx.fillRect((bx+3)*PIXEL, (mattY-2)*PIXEL, pw2*PIXEL, 4*PIXEL);
+  ctx.fillRect((bx+bw-3-pw2)*PIXEL, (mattY-2)*PIXEL, pw2*PIXEL, 4*PIXEL);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect((bx+3)*PIXEL, (mattY-2)*PIXEL, pw2*PIXEL, PIXEL);
+  ctx.fillRect((bx+bw-3-pw2)*PIXEL, (mattY-2)*PIXEL, pw2*PIXEL, PIXEL);
+  ctx.fillStyle = '#d8d0c4';
+  ctx.fillRect((bx+3)*PIXEL, (mattY+1)*PIXEL, pw2*PIXEL, PIXEL);
+  ctx.fillRect((bx+bw-3-pw2)*PIXEL, (mattY+1)*PIXEL, pw2*PIXEL, PIXEL);
+
+  // bench at foot
+  const benchX = bx+Math.floor(bw*0.15), benchY=mattY+5, benchW=Math.floor(bw*0.7);
+  ctx.fillStyle = '#3d0010';
+  ctx.fillRect(benchX*PIXEL, benchY*PIXEL, benchW*PIXEL, 4*PIXEL);
+  ctx.fillStyle = '#5a0018';
+  ctx.fillRect(benchX*PIXEL, benchY*PIXEL, benchW*PIXEL, PIXEL);
+  ctx.fillStyle = '#2a0008';
+  ctx.fillRect(benchX*PIXEL,(benchY+4)*PIXEL,2*PIXEL,2*PIXEL);
+  ctx.fillRect((benchX+benchW-2)*PIXEL,(benchY+4)*PIXEL,2*PIXEL,2*PIXEL);
 
   // === NIGHTSTANDS ===
-  function drawNightstand(nx, ny) {
-    const nw=9, nh=7;
-    // shadow
-    ctx.fillStyle='rgba(0,0,0,0.3)';
-    ctx.fillRect((nx+1)*PIXEL,(ny+1)*PIXEL,nw*PIXEL,nh*PIXEL);
-    ctx.fillStyle='#120c06';
-    ctx.fillRect(nx*PIXEL,ny*PIXEL,nw*PIXEL,nh*PIXEL);
-    // top surface
-    ctx.fillStyle='#281806';
-    ctx.fillRect(nx*PIXEL,ny*PIXEL,nw*PIXEL,PIXEL);
-    // drawer lines
-    ctx.fillStyle='#0c0804';
-    ctx.fillRect(nx*PIXEL,(ny+3)*PIXEL,nw*PIXEL,PIXEL);
-    // knobs
-    ctx.fillStyle='#705030';
-    ctx.fillRect((nx+3)*PIXEL,(ny+1)*PIXEL,3*PIXEL,PIXEL);
-    ctx.fillRect((nx+3)*PIXEL,(ny+4)*PIXEL,3*PIXEL,PIXEL);
-    ctx.fillStyle='#a07840';
-    ctx.fillRect((nx+4)*PIXEL,(ny+1)*PIXEL,PIXEL,PIXEL);
+  function drawNS(nx, ny) {
+    ctx.fillStyle='#2a0008';
+    ctx.fillRect(nx*PIXEL,ny*PIXEL,9*PIXEL,6*PIXEL);
+    ctx.fillStyle='#3d0010';
+    ctx.fillRect(nx*PIXEL,ny*PIXEL,9*PIXEL,PIXEL);
+    ctx.fillStyle='#1a0005';
+    ctx.fillRect(nx*PIXEL,(ny+3)*PIXEL,9*PIXEL,PIXEL);
+    ctx.fillStyle='#c09030'; ctx.fillRect((nx+4)*PIXEL,(ny+1)*PIXEL,PIXEL,PIXEL);
     ctx.fillRect((nx+4)*PIXEL,(ny+4)*PIXEL,PIXEL,PIXEL);
-    // candle + holder
-    ctx.fillStyle='#704820';
-    ctx.fillRect((nx+3)*PIXEL,(ny-2)*PIXEL,3*PIXEL,2*PIXEL); // holder
-    ctx.fillStyle='#e8d898';
-    ctx.fillRect((nx+4)*PIXEL,(ny-5)*PIXEL,PIXEL,3*PIXEL);   // candle
-    ctx.fillStyle='#ffe870';
-    ctx.fillRect((nx+4)*PIXEL,(ny-6)*PIXEL,PIXEL,PIXEL);     // flame base
-    ctx.fillStyle='#fff8b0';
-    ctx.fillRect((nx+4)*PIXEL,(ny-7)*PIXEL,PIXEL,PIXEL);     // flame tip
-    // candle glow
-    const cg=ctx.createRadialGradient((nx+4)*PIXEL,(ny-5)*PIXEL,0,(nx+4)*PIXEL,(ny-5)*PIXEL,8*PIXEL);
-    cg.addColorStop(0,'rgba(255,210,90,0.35)');
-    cg.addColorStop(1,'rgba(255,160,40,0)');
-    ctx.fillStyle=cg;
-    ctx.fillRect((nx-4)*PIXEL,(ny-11)*PIXEL,16*PIXEL,12*PIXEL);
+    // lamp glow
+    const lg=ctx.createRadialGradient((nx+4)*PIXEL,(ny-5)*PIXEL,0,(nx+4)*PIXEL,(ny-5)*PIXEL,10*PIXEL);
+    lg.addColorStop(0,'rgba(255,210,100,0.48)'); lg.addColorStop(1,'rgba(255,160,40,0)');
+    ctx.fillStyle=lg; ctx.fillRect((nx-6)*PIXEL,(ny-13)*PIXEL,20*PIXEL,16*PIXEL);
+    // shade
+    ctx.fillStyle='#d4a040';
+    ctx.fillRect((nx+1)*PIXEL,(ny-8)*PIXEL,7*PIXEL,5*PIXEL);
+    ctx.fillStyle='#b88030';
+    ctx.fillRect((nx+2)*PIXEL,(ny-10)*PIXEL,5*PIXEL,2*PIXEL);
+    ctx.fillRect((nx+3)*PIXEL,(ny-11)*PIXEL,3*PIXEL,PIXEL);
+    ctx.fillStyle='#c89038'; ctx.fillRect(nx*PIXEL,(ny-4)*PIXEL,9*PIXEL,PIXEL);
+    ctx.fillStyle='rgba(255,240,160,0.85)'; ctx.fillRect((nx+3)*PIXEL,(ny-7)*PIXEL,3*PIXEL,3*PIXEL);
+    // pink ceramic base
+    ctx.fillStyle='#c07878'; ctx.fillRect((nx+3)*PIXEL,(ny-3)*PIXEL,3*PIXEL,3*PIXEL);
+    ctx.fillStyle='#d08888'; ctx.fillRect((nx+3)*PIXEL,(ny-3)*PIXEL,3*PIXEL,PIXEL);
   }
-  drawNightstand(bx - 11, floorY - 8);
-  drawNightstand(bx + bw + 2, floorY - 8);
+  drawNS(bx-11, floorY-7);
+  drawNS(bx+bw+2, floorY-7);
 
-  // === WARM FLOOR REFLECTION from chandelier ===
-  const floorRef = ctx.createRadialGradient(cx*PIXEL, floorY*PIXEL, 0, cx*PIXEL, floorY*PIXEL, 22*PIXEL);
-  floorRef.addColorStop(0,'rgba(255,200,80,0.12)');
-  floorRef.addColorStop(1,'rgba(255,170,50,0)');
-  ctx.fillStyle = floorRef;
-  ctx.fillRect((cx-22)*PIXEL, floorY*PIXEL, 44*PIXEL, 8*PIXEL);
+  // === SOFA foreground — richly patterned ===
+  const sofX=Math.floor(W*0.02), sofY=Math.floor(H*0.64), sofW=Math.floor(W*0.34);
+  ctx.fillStyle='#5a1c10';
+  ctx.fillRect(sofX*PIXEL,sofY*PIXEL,sofW*PIXEL,Math.floor(H*0.15)*PIXEL);
+  for (let x2=0;x2<sofW;x2+=3) for (let y2=0;y2<Math.floor(H*0.15);y2+=3) {
+    ctx.fillStyle=(Math.floor(x2/3)+Math.floor(y2/3))%2===0?'rgba(100,30,15,0.3)':'rgba(140,55,25,0.2)';
+    ctx.fillRect((sofX+x2)*PIXEL,(sofY+y2)*PIXEL,2*PIXEL,2*PIXEL);
+  }
+  ctx.fillStyle='#7a2c1c'; ctx.fillRect(sofX*PIXEL,sofY*PIXEL,sofW*PIXEL,PIXEL);
+  ctx.fillStyle='#481408';
+  ctx.fillRect(sofX*PIXEL,(sofY-3)*PIXEL,4*PIXEL,(Math.floor(H*0.15)+3)*PIXEL);
+  ctx.fillRect((sofX+sofW-4)*PIXEL,(sofY-3)*PIXEL,4*PIXEL,(Math.floor(H*0.15)+3)*PIXEL);
+  ctx.fillStyle='#6a2010';
+  ctx.fillRect(sofX*PIXEL,(sofY-3)*PIXEL,4*PIXEL,PIXEL);
+  ctx.fillRect((sofX+sofW-4)*PIXEL,(sofY-3)*PIXEL,4*PIXEL,PIXEL);
+  ctx.fillStyle='#a07820';
+  ctx.fillRect((sofX+2)*PIXEL,(sofY+Math.floor(H*0.15))*PIXEL,2*PIXEL,2*PIXEL);
+  ctx.fillRect((sofX+sofW-4)*PIXEL,(sofY+Math.floor(H*0.15))*PIXEL,2*PIXEL,2*PIXEL);
+  // cushions — teal, mustard, navy
+  const cushions=[
+    {dx:5,w:8,h:9,col:'#1a4840',hi:'#24604e'},
+    {dx:14,w:9,h:9,col:'#8a6a10',hi:'#b08820'},
+    {dx:24,w:8,h:9,col:'#0e1840',hi:'#182458'},
+  ];
+  for (const cu of cushions) {
+    ctx.fillStyle=cu.col; ctx.fillRect((sofX+cu.dx)*PIXEL,(sofY+1)*PIXEL,cu.w*PIXEL,cu.h*PIXEL);
+    ctx.fillStyle=cu.hi;  ctx.fillRect((sofX+cu.dx)*PIXEL,(sofY+1)*PIXEL,cu.w*PIXEL,PIXEL);
+    ctx.fillRect((sofX+cu.dx)*PIXEL,(sofY+1)*PIXEL,PIXEL,cu.h*PIXEL);
+  }
+
+  // === RUG — #669bbc blue with gold border ===
+  const rugX=Math.floor(W*0.18),rugY=Math.floor(H*0.75),rugW=Math.floor(W*0.64),rugH=Math.floor(H*0.13);
+  ctx.fillStyle='#669bbc';
+  ctx.fillRect(rugX*PIXEL,rugY*PIXEL,rugW*PIXEL,rugH*PIXEL);
+  // slightly darker centre
+  ctx.fillStyle='rgba(40,70,100,0.25)';
+  ctx.fillRect((rugX+4)*PIXEL,(rugY+3)*PIXEL,(rugW-8)*PIXEL,(rugH-6)*PIXEL);
+  // gold border
+  ctx.fillStyle='#9a7418';
+  ctx.fillRect(rugX*PIXEL,rugY*PIXEL,rugW*PIXEL,2*PIXEL);
+  ctx.fillRect(rugX*PIXEL,(rugY+rugH-2)*PIXEL,rugW*PIXEL,2*PIXEL);
+  ctx.fillRect(rugX*PIXEL,rugY*PIXEL,2*PIXEL,rugH*PIXEL);
+  ctx.fillRect((rugX+rugW-2)*PIXEL,rugY*PIXEL,2*PIXEL,rugH*PIXEL);
+  ctx.fillStyle='#c09820';
+  ctx.fillRect(rugX*PIXEL,rugY*PIXEL,rugW*PIXEL,PIXEL);
+  ctx.fillRect(rugX*PIXEL,rugY*PIXEL,PIXEL,rugH*PIXEL);
+  // blob motifs
+  ctx.fillStyle='rgba(30,60,100,0.55)';
+  for (let i=0;i<5;i++) {
+    const mx=rugX+5+Math.floor(i*(rugW-10)/4), my=rugY+Math.floor(rugH/2);
+    ctx.fillRect((mx-2)*PIXEL,(my-2)*PIXEL,5*PIXEL,5*PIXEL);
+    ctx.fillRect((mx-3)*PIXEL,(my-1)*PIXEL,7*PIXEL,3*PIXEL);
+  }
+
+  // === CEILING PENDANT ===
+  const pendX=Math.floor(W*0.60), pendY=Math.floor(H*0.06);
+  const pg=ctx.createRadialGradient(pendX*PIXEL,pendY*PIXEL,0,pendX*PIXEL,pendY*PIXEL,22*PIXEL);
+  pg.addColorStop(0,'rgba(255,220,150,0.32)'); pg.addColorStop(1,'rgba(255,170,60,0)');
+  ctx.fillStyle=pg; ctx.fillRect((pendX-22)*PIXEL,0,44*PIXEL,24*PIXEL);
+  ctx.fillStyle='#c0a030'; ctx.fillRect((pendX-4)*PIXEL,0,8*PIXEL,PIXEL);
+  ctx.fillStyle='#d0b038'; ctx.fillRect((pendX-2)*PIXEL,PIXEL,5*PIXEL,2*PIXEL);
+  for (let dy=-3;dy<=3;dy++) {
+    const hw=Math.floor(Math.sqrt(Math.max(0,9-dy*dy)));
+    ctx.fillStyle=dy===0?'#e8dca8':'#c8bc90';
+    ctx.fillRect((pendX-hw)*PIXEL,(pendY+dy)*PIXEL,hw*2*PIXEL,PIXEL);
+  }
+  ctx.fillStyle='rgba(255,245,200,0.75)'; ctx.fillRect((pendX-2)*PIXEL,(pendY-1)*PIXEL,4*PIXEL,2*PIXEL);
+
+  // === GOLD PICTURE FRAMES left wall ===
+  const picX=Math.floor(W*0.04), picBaseY=Math.floor(H*0.15);
+  for (let i=0;i<3;i++) {
+    const pfx=picX, pfy=picBaseY+i*Math.floor(H*0.18);
+    const pfw=Math.floor(W*0.12), pfh=Math.floor(H*0.13);
+    ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect((pfx+2)*PIXEL,(pfy+2)*PIXEL,pfw*PIXEL,pfh*PIXEL);
+    ctx.fillStyle='#9a7420'; ctx.fillRect(pfx*PIXEL,pfy*PIXEL,pfw*PIXEL,pfh*PIXEL);
+    ctx.fillStyle='#d8cfc0'; ctx.fillRect((pfx+2)*PIXEL,(pfy+2)*PIXEL,(pfw-4)*PIXEL,(pfh-4)*PIXEL);
+    ctx.fillStyle='#2a0008'; ctx.fillRect((pfx+4)*PIXEL,(pfy+4)*PIXEL,(pfw-8)*PIXEL,(pfh-8)*PIXEL);
+    ctx.fillStyle=`rgba(${0x78},${5+i*3},${8+i*3},0.9)`;
+    ctx.fillRect((pfx+5)*PIXEL,(pfy+5)*PIXEL,(pfw-10)*PIXEL,Math.floor((pfh-10)*0.55)*PIXEL);
+    ctx.fillStyle='#c0942a'; ctx.fillRect(pfx*PIXEL,pfy*PIXEL,pfw*PIXEL,PIXEL);
+    ctx.fillRect(pfx*PIXEL,pfy*PIXEL,PIXEL,pfh*PIXEL);
+  }
+
+  // === LAMP FLOOR REFLECTIONS on #669bbc floor ===
+  for (const nx of [bx-11+4, bx+bw+2+4]) {
+    const fr2=ctx.createRadialGradient(nx*PIXEL,floorY*PIXEL,0,nx*PIXEL,floorY*PIXEL,14*PIXEL);
+    fr2.addColorStop(0,'rgba(255,190,70,0.18)'); fr2.addColorStop(1,'rgba(255,140,30,0)');
+    ctx.fillStyle=fr2; ctx.fillRect((nx-14)*PIXEL,floorY*PIXEL,28*PIXEL,8*PIXEL);
+  }
 }
 
 function drawHospital(W, H) {
